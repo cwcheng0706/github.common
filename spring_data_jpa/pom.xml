@@ -1,0 +1,273 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.zy</groupId>
+  <artifactId>spring_data_jpa</artifactId>
+  <packaging>war</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>spring_data_jpa Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+
+<!-- 	<scm> -->
+<!-- 		<connection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</connection> -->
+<!-- 		<url>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</url> -->
+<!-- 		<developerConnection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</developerConnection> -->
+<!-- 	</scm> -->
+
+<!-- 	<scm> -->
+<!-- 		<connection>scm:git:https://github.com/zy198804065/yz/resolveexcel</connection> -->
+<!-- 		<url>scm:git:https://github.com/zy198804065/yz/resolveexcel</url> -->
+<!-- 		<developerConnection>scm:git:https://github.com/zy198804065/yz/resolveexcel</developerConnection> -->
+<!-- 	</scm> -->
+
+<!-- 	<scm> -->
+<!-- 		<connection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</connection> -->
+<!-- 		<url>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</url> -->
+<!-- 		<developerConnection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</developerConnection> -->
+<!-- 	</scm> -->
+
+<!-- 	<scm> -->
+<!-- 		<connection>scm:git:git://github.com/sonatype/sample-project.git</connection> -->
+<!-- 		<url>scm:git:git://github.com/sonatype/sample-project.git</url> -->
+<!-- 		<developerConnection>scm:git:git://github.com/sonatype-sample-project.git</developerConnection> -->
+<!-- 	</scm> -->
+
+<!-- 	<scm> -->
+<!-- 		<connection>scm:git:ssh://User ID@Server Address:Port/Project Name</connection> -->
+<!-- 		<url>scm:git:ssh://User ID@Server Address:Port/Project Name</url> -->
+<!-- 		<developerConnection>scm:git:ssh://UserID@Server Address:Port/Project Name</developerConnection> -->
+<!-- 	</scm> -->
+
+
+	<properties>
+		<!-- <jdbc.driver.groupId>com.oracle</jdbc.driver.groupId> -->
+		<!-- <jdbc.driver.artifactId>ojdbc14</jdbc.driver.artifactId> -->
+		<!-- <jdbc.driver.version>10.2.0</jdbc.driver.version>10.2.0.3.0 -->
+		<!-- 主要依赖库的版本定义 -->
+		<!-- <meteor.version>3.0.1</meteor.version> -->
+		<!-- <meteor.release.version></meteor.release.version> -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<axis2.version>1.6.2</axis2.version>
+		<spring.version>4.1.0</spring.version>
+		<hibernate.version>4.3.6</hibernate.version>
+	</properties>
+
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>${repository.releases.url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>${repository.snapshots.url}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+
+		<!-- 配置Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}.RELEASE</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-instrument</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-messaging</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-oxm</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}.RELEASE</version>
+		</dependency>
+
+		<!-- 配置Hibernate -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>${hibernate.version}.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.32</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>servlet_spring4_hibernate_anno</finalName>
+
+		<!-- 配置配置文件对应的目录。根据settings.xml 里面的变量取配置文件 -->
+		<!-- <resources> <resource> <directory>src/main/resources/${repository.releases.env}</directory> <filtering>true</filtering> 
+			</resource> </resources> -->
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<encoding>UTF-8</encoding>
+					<compilerArguments>
+						<extdirs>src\main\webapp\WEB-INF\lib</extdirs>
+					</compilerArguments>
+				</configuration>
+			</plugin>
+
+			<!-- 跳过test -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.16</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+<!-- 				<configuration> -->
+<!-- 					<webResources> -->
+<!-- 						<resource> -->
+<!-- 							<directory>WebContent</directory> -->
+<!-- 						</resource> -->
+<!-- 					</webResources> -->
+<!-- 				</configuration> -->
+			</plugin>
+
+			<plugin> 
+				<groupId>org.apache.maven.plugins</groupId> 
+				<artifactId>maven-release-plugin</artifactId> 
+				<version>2.4.2</version> 
+				<configuration> 
+					<tagBase>svn://192.168.21.199/repos/project/resolveexcel/01-src/tags</tagBase> 
+					<username>${svn.name}</username> 
+					<password>${svn.password}</password> 
+				</configuration> 
+			</plugin>
+
+			<!-- 解决资源文件的编码问题 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
