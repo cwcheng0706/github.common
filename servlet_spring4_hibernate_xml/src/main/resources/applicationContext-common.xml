@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/tx
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://www.springframework.org/schema/aop
+			http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="mySqlDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="driverClassName" value="${jdbc.driver}" />
+	</bean>
+
+	<bean id="mySqlSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="mySqlDataSource" />
+		<property name="mappingResources">
+			<list>
+				<value>product.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.MySQLDialect
+<!-- 				hibernate.show_sql=true -->
+				hibernate.format_sql=true
+				hibernate.hbm2ddl.auto=update
+			</value>
+		</property>
+	</bean>
+
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="mySqlSessionFactory" />
+	</bean>
+
+	<aop:config>
+		<aop:pointcut id="allMethod" expression="execution(* com.zy.service..*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="allMethod" />
+	</aop:config>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+
+
+
+</beans>
