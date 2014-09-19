@@ -1,0 +1,275 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.zy</groupId>
+	<artifactId>resolveexcel</artifactId>
+	<packaging>war</packaging>
+	<version>1.0.4-SNAPSHOT</version>
+	<name>resolveexcel</name>
+	<url>http://maven.apache.org</url>
+	
+<!-- 	<scm> -->
+<!--   		<connection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</connection> -->
+<!--   		<url>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</url> -->
+<!--   		<developerConnection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</developerConnection> -->
+<!-- 	</scm> -->
+
+	<!-- 
+	<scm>
+		<connection>scm:git:https://github.com/zy198804065/yz/resolveexcel</connection>
+		<url>scm:git:https://github.com/zy198804065/yz/resolveexcel</url>
+		<developerConnection>scm:git:https://github.com/zy198804065/yz/resolveexcel</developerConnection>
+	</scm>
+	 -->
+	
+	<!-- 
+	<scm>
+		<connection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</connection>
+		<url>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</url>
+		<developerConnection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</developerConnection>
+	</scm>
+	 -->
+	
+	<!-- 
+	<scm>
+		<connection>scm:git:git://github.com/sonatype/sample-project.git</connection>
+		<url>scm:git:git://github.com/sonatype/sample-project.git</url>
+		<developerConnection>scm:git:git://github.com/sonatype-sample-project.git</developerConnection>
+	</scm>
+	 -->
+	
+	<!-- 
+	 <scm>
+    	<connection>scm:git:ssh://<User ID>@<Server Address>:<Port>/<Project Name></connection>
+    	<url>scm:git:ssh://<User ID>@<Server Address>:<Port>/<Project Name></url>
+    	<developerConnection>scm:git:ssh://<User ID>@<Server Address>:<Port>/<Project Name></developerConnection> 
+  	</scm>
+  	 -->
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>${repository.releases.url}</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>${repository.snapshots.url}</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-digester3</artifactId>
+			<version>3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils-core</artifactId>
+			<version>1.8.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>1.9.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jstl</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>taglibs</groupId>
+			<artifactId>standard</artifactId>
+			<version>1.1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.4</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		
+		<!-- 配置httpclient -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId>
+			<version>4.2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.2.6</version>
+		</dependency>
+        
+       		
+<!-- 	
+		<dependency>  
+            <groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcomponents-client</artifactId> 
+            <version>4.3.5</version>  
+            <scope>system</scope>  
+            <systemPath>${project.basedir}/WebContent/WEB-INF/lib/httpclient-4.2.6.jar</systemPath>  
+        </dependency>  
+        <dependency>  
+            <groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId> 
+            <version>4.3.5</version>  
+            <scope>system</scope>  
+            <systemPath>${project.basedir}/WebContent/WEB-INF/lib/httpclient-cache-4.2.6.jar</systemPath>  
+        </dependency>
+        <dependency>  
+            <groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId> 
+            <version>4.3.2</version>  
+            <scope>system</scope>  
+            <systemPath>${project.basedir}/WebContent/WEB-INF/lib/httpcore-4.2.5.jar</systemPath>  
+        </dependency>
+        <dependency>  
+            <groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId> 
+            <version>4.3.5</version>  
+            <scope>system</scope>  
+            <systemPath>${project.basedir}/WebContent/WEB-INF/lib/httpmime-4.2.6.jar</systemPath>  
+        </dependency>
+		<dependency>  
+            <groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId> 
+            <version>4.3.5</version>  
+            <scope>system</scope>  
+            <systemPath>${project.basedir}/WebContent/WEB-INF/lib/fluent-hc-4.2.6.jar</systemPath>  
+        </dependency>
+ -->   
+        
+	</dependencies>
+
+	<build>
+		<finalName>resolveexcel</finalName>
+		
+		<!-- 
+		<resources>
+			<resource>
+				<directory>src/main/resources/${repository.releases.env}</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+ -->
+		<plugins>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+<!-- 					<source>1.7</source> -->
+<!-- 					<target>1.7</target> -->
+					<encoding>UTF-8</encoding>
+					<compilerArguments>
+						<extdirs>src\main\webapp\WEB-INF\lib</extdirs>
+					</compilerArguments>
+				</configuration>
+			</plugin>
+			
+			<!-- 跳过test -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.16</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<webResources>
+						<resource>
+							this is relative to the pom.xml directory
+							<directory>WebContent</directory>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+	  			<groupId>org.apache.maven.plugins</groupId>
+	  			<artifactId>maven-release-plugin</artifactId>
+	  			<version>2.4.2</version>
+	  			<configuration>
+	    			<tagBase>svn://192.168.21.199/repos/project/resolveexcel/01-src/tags</tagBase>
+	    			<username>${svn.name}</username>
+	    			<password>${svn.password}</password>
+	  			</configuration>
+			</plugin>
+
+			<!-- 解决资源文件的编码问题 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

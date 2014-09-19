@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+   
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>com.zy.filter.CharacterFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+
+  <listener>
+    <listener-class>
+      org.apache.commons.fileupload.servlet.FileCleanerCleanup
+    </listener-class>
+  </listener>
+  
+  <servlet>
+    <servlet-name>uploadExcelServlet</servlet-name>
+    <servlet-class>com.zy.servlet.UploadExcelServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>listExcelServlet</servlet-name>
+    <servlet-class>com.zy.servlet.ListExcelServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>delExcelServlet</servlet-name>
+    <servlet-class>com.zy.servlet.DelExcelServlet</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>resolveExcelServlet</servlet-name>
+  	<servlet-class>com.zy.servlet.ResolveExcelServlet</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>downloadExcelServlet</servlet-name>
+  	<servlet-class>com.zy.servlet.DownloadExcelServlet</servlet-class>
+  </servlet>
+  
+  
+  
+  
+   <servlet>
+  	<servlet-name>sslListServlet</servlet-name>
+  	<servlet-class>com.zy.ssl.servlet.SSLListServlet</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>sslGenServlet</servlet-name>
+  	<servlet-class>com.zy.ssl.keytool.servlet.SSLGenServlet</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>receiveServlet</servlet-name>
+  	<servlet-class>com.zy.ssl.servlet.ReceiveServlet</servlet-class>
+  </servlet>
+  
+  
+  
+  <servlet-mapping>
+    <servlet-name>uploadExcelServlet</servlet-name>
+    <url-pattern>/uploadExcelServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>listExcelServlet</servlet-name>
+    <url-pattern>/listExcelServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>delExcelServlet</servlet-name>
+    <url-pattern>/delExcelServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>resolveExcelServlet</servlet-name>
+    <url-pattern>/resolveExcelServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>downloadExcelServlet</servlet-name>
+    <url-pattern>/downloadExcelServlet</url-pattern>
+  </servlet-mapping>
+  
+  
+  
+  <servlet-mapping>
+    <servlet-name>sslListServlet</servlet-name>
+    <url-pattern>/ssl/sslList</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>sslGenServlet</servlet-name>
+    <url-pattern>/ssl/sslGen</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>receiveServlet</servlet-name>
+    <url-pattern>/service/post</url-pattern>
+  </servlet-mapping>
+  
+  
+  
+ 
+  	<login-config>  
+		<auth-method>CLIENT-CERT</auth-method>  
+		<realm-name>Client Cert Users-only Area</realm-name>  
+	</login-config>
+	<security-constraint>  
+		<web-resource-collection >  
+			<web-resource-name >SSL</web-resource-name>  
+			<url-pattern>/service/*</url-pattern>  
+		</web-resource-collection>  
+		<user-data-constraint>  
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>  
+		</user-data-constraint>  
+	</security-constraint>
+</web-app> 	
