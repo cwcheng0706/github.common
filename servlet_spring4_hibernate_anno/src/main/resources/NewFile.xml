@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans>
+	<jee:jndi-lookup id="dataSource1" jndi-name="java:comp/env/jdbc/myds1" />
+	<jee:jndi-lookup id="dataSource2" jndi-name="java:comp/env/jdbc/myds2" />
+	<bean id="mySessionFactory1" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="myDataSource1" />
+		<property name="mappingResources">
+			<list>
+				<value>product.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.MySQLDialect
+				hibernate.show_sql=true
+			</value>
+		</property>
+	</bean>
+	<bean id="mySessionFactory2" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource" ref="myDataSource2" />
+		<property name="mappingResources">
+			<list>
+				<value>inventory.hbm.xml</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<value>
+				hibernate.dialect=org.hibernate.dialect.OracleDialect
+			</value>
+		</property>
+	</bean>
+	
+	<bean id="myTxManager" class="org.springframework.transaction.jta.JtaTransactionManager" />
+	
+	
+	
+	
+	<bean id="myProductDao" class="product.ProductDaoImpl">
+		<property name="sessionFactory" ref="mySessionFactory1" />
+	</bean>
+	
+	<bean id="myInventoryDao" class="product.InventoryDaoImpl">
+		<property name="sessionFactory" ref="mySessionFactory2" />
+	</bean>
+	
+	<bean id="myProductService" class="product.ProductServiceImpl">
+		<property name="productDao" ref="myProductDao" />
+		<property name="inventoryDao" ref="myInventoryDao" />
+	</bean>
+	
+	<aop:config>
+		<aop:pointcut id="productServiceMethods" expression="execution(* product.ProductService.(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="productServiceMethods" />
+	</aop:config>
+	<tx:advice id="txAdvice" transaction-manager="myTxManager">
+		<tx:attributes>
+			<tx:method name="increasePrice" propagation="REQUIRED" />
+			<tx:method name="someOtherBusinessMethod" propagation="REQUIRES_NEW" />
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+</beans>
