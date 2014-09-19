@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SealDocRequest>
+<BASE_DATA>
+        <!--应用系统id写死-->
+	<SYS_ID>sysId</SYS_ID>
+        <!--用户id写死-->
+	<USER_ID>userId</USER_ID>
+        <!--用户密码写死-->
+	<USER_PSD>123456</USER_PSD>
+</BASE_DATA>
+<META_DATA>
+     <!--是否模板合并写死-->
+    <IS_MERGER>false</IS_MERGER>
+</META_DATA>
+<FILE_LIST>
+   <TREE_NODE>
+        <!--文档名称-->
+        <FILE_NO>testNo5.pdf</FILE_NO>
+        <!--规则类型0：按照规则号进行盖章，1按照规则信息进行盖章写死-->
+        <RULE_TYPE>0</RULE_TYPE>
+        <!--规则号，多个规则用逗号隔开-->
+        <RULE_NO>1</RULE_NO>
+        <!--应用场景data是模板数据合成，file是读取FILEPATH文件写死-->
+        <CJ_TYPE>file</CJ_TYPE>
+        <!--请求类型，1：ftp,0:http写死--> 
+        <REQUEST_TYPE>0</REQUEST_TYPE>
+        <!--读取文件路径-->
+        <FILE_PATH>http://127.0.0.1:8080/Seal/testNo5.pdf</FILE_PATH>
+        <!--是否添加标记印章1：是，0：否写死-->
+        <AREA_SEAL>0</AREA_SEAL>
+    </TREE_NODE>
+</FILE_LIST>
+</SealDocRequest>

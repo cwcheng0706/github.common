@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serviceGroup>
+	<service name="myService" >
+	
+		<!--  引用soapmonitor模块  -->
+	    <module ref="soapmonitor"/>
+
+		<description>SplitBigTxtFile</description>
+		<parameter name="ServiceClass">com.zy.nio.split.SplitBigTxtFile</parameter>
+    
+		<operation name="process">
+<!-- 	targetNamespace="http://www.zy.com"		<messageReceiver class="org.apache.axis2.rpc.receivers.RPCMessageReceiver" /> -->
+			<messageReceiver class="org.apache.axis2.rpc.receivers.RPCInOnlyMessageReceiver" />
+		</operation>
+
+<!-- 		<schema schemaNamespace="http://www.zy.com/" /> -->
+
+	</service>
+</serviceGroup>  
