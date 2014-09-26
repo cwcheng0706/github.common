@@ -36,37 +36,37 @@ public class Barrier implements Watcher {
 
 	}
 
-	public synchronized void process(WatchedEvent event) {
-		synchronized (mutex) {
+	public void process(WatchedEvent event) {
+//		synchronized (mutex) {
 			mutex.notify();
-		}
+//		}
 	}
 
 	public boolean enter(String name) throws Exception {
 		zk.create(root + "/" + name, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 		while (true) {
-			synchronized (mutex) {
+//			synchronized (mutex) {
 				List<String> list = zk.getChildren(root, true);
 				if (list.size() < size) {
 					mutex.wait();
 				} else {
 					return true;
 				}
-			}
+//			}
 		}
 	}
 
 	public boolean leave(String name) throws KeeperException, InterruptedException {
 		zk.delete(root + "/" + name, 0);
 		while (true) {
-			synchronized (mutex) {
+//			synchronized (mutex) {
 				List<String> list = zk.getChildren(root, true);
 				if (list.size() > 0) {
 					mutex.wait();
 				} else {
 					return true;
 				}
-			}
+//			}
 		}
 	}
 
