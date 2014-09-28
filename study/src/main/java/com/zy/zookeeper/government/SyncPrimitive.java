@@ -1,11 +1,16 @@
 package com.zy.zookeeper.government;
 
 import java.io.IOException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 public class SyncPrimitive implements Watcher {
+	
+	private static Log logger = LogFactory.getLog(SyncPrimitive.class);
 
 	ZooKeeper zk = null;
 	Integer mutex;
@@ -29,7 +34,7 @@ public class SyncPrimitive implements Watcher {
 
 	synchronized public void process(WatchedEvent event) {
 		synchronized (mutex) {
-			// System.out.println("Process: " + event.getType());
+			logger.debug("Process: " + event.getType());
 			mutex.notify();
 		}
 	}
