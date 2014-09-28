@@ -4,6 +4,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -13,6 +15,9 @@ import org.apache.zookeeper.data.Stat;
  * Barrier
  */
 public class Barrier extends SyncPrimitive {
+	
+	private static Log logger = LogFactory.getLog(Barrier.class);
+			
 	int size;
 	String name;
 
@@ -36,18 +41,18 @@ public class Barrier extends SyncPrimitive {
 					zk.create(root, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 				}
 			} catch (KeeperException e) {
-				System.out.println("Keeper exception when instantiating queue: " + e.toString());
+				logger.debug("Keeper exception when instantiating queue: " + e.toString());
 			} catch (InterruptedException e) {
-				System.out.println("Interrupted exception");
+				logger.debug("Interrupted exception");
 			}
 		}
 
 		// My node name
-		try {
-			name = new String(InetAddress.getLocalHost().getCanonicalHostName().toString());
-		} catch (UnknownHostException e) {
-			System.out.println(e.toString());
-		}
+//		try {
+//			name = new String(InetAddress.getLocalHost().getCanonicalHostName().toString());
+//		} catch (UnknownHostException e) {
+//			logger.error(e.toString());
+//		}
 
 	}
 
@@ -59,8 +64,10 @@ public class Barrier extends SyncPrimitive {
 	 * @throws InterruptedException
 	 */
 
-	boolean enter() throws KeeperException, InterruptedException {
-		zk.create(root + "/" + name, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+	boolean enter(String nodeName) throws KeeperException, InterruptedException {
+		logger.debug("--enter " + nodeName);
+//		zk.create(root + "/" + nodeName, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+		zk.create(root + "/" + nodeName, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 		while (true) {
 			synchronized (mutex) {
 				List<String> list = zk.getChildren(root, true);
@@ -82,8 +89,9 @@ public class Barrier extends SyncPrimitive {
 	 * @throws InterruptedException
 	 */
 
-	boolean leave() throws KeeperException, InterruptedException {
-		zk.delete(root + "/" + name, 0);
+	boolean leave(String nodeName) throws KeeperException, InterruptedException {
+		logger.debug("------leave " + nodeName);
+		zk.delete(root + "/" + nodeName, 0);
 		while (true) {
 			synchronized (mutex) {
 				List<String> list = zk.getChildren(root, true);

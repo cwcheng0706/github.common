@@ -7,18 +7,18 @@ import org.apache.zookeeper.ZooKeeper;
 
 public class SyncPrimitive implements Watcher {
 
-	static ZooKeeper zk = null;
-	static Integer mutex;
+	ZooKeeper zk = null;
+	Integer mutex;
 
 	String root;
 
 	SyncPrimitive(String address) {
 		if (zk == null) {
 			try {
-				System.out.println("Starting ZK:");
+//				System.out.println("Starting ZK:");
 				zk = new ZooKeeper(address, 3000, this);
 				mutex = new Integer(-1);
-				System.out.println("Finished starting ZK: " + zk);
+//				System.out.println("Finished starting ZK: " + zk);
 			} catch (IOException e) {
 				System.out.println(e.toString());
 				zk = null;
