@@ -5,8 +5,8 @@ import java.util.Random;
 public class BarrierTest {
 
     public static void main(String args[]) throws Exception {
-        for (int i = 0; i < 300; i++) {
-            Process p = new Process("Thread-" + i, new Barrier("/app1/barrier", 300));
+        for (int i = 0; i < 3; i++) {
+            Process p = new Process("Thread-" + i, new Barrier("/app1/barrier", 3));
             p.start();
         }
     }
@@ -20,6 +20,7 @@ class Process extends Thread {
     public Process(String name, Barrier barrier){
         this.name = name;
         this.barrier = barrier;
+        this.barrier.name = name;
     }
 
     @Override

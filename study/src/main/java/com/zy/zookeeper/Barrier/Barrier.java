@@ -16,6 +16,8 @@ public class Barrier implements Watcher {
 	
 	private static Log logger = LogFactory.getLog(Barrier.class);
 
+	public String name = "init";
+	
 	private static final String addr = "172.16.2.199:2181,172.16.2.199:2182,172.16.2.199:2183";
 	private ZooKeeper zk = null;
 	private Integer mutex;
@@ -42,6 +44,7 @@ public class Barrier implements Watcher {
 
 	public void process(WatchedEvent event) {
 		synchronized (mutex) {
+			logger.debug("--notify-" + name);
 			mutex.notify();
 		}
 	}
