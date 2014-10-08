@@ -33,6 +33,8 @@
 	//1:为本地智能卡;2：本地注册用户;3：远程用户;4：测试用户。如果当前打开的不是aip文件，则忽略此参数。
 	var userType = 1; 
 	
+	var sealPic;
+	
 	/** 
 	用户权限, 参数为可取下列任意项的和来叠加权限，如需要笔记批注和加盖印章的 权限，参数为5(1+4):
 	　 ACCE_ADD_PEN 　　　 (1) 　 笔迹批注权限
@@ -65,11 +67,16 @@
 		//document.getElementById("HWPostil1").ForceSignType = 4 ;
 		
 		//设置客户端cookies
-		document.getElementById("HWPostil1").Setvalue("SET_CURRENT_COOKIE", "xxx");
+		//document.getElementById("HWPostil1").Setvalue("SET_CURRENT_COOKIE", "xxx");
 	}
 	
 	//文字查找盖章
 	function autoseal() {
+		
+		sealPic = document.getElementById("sealPic").value;
+		//sealPic = getFullPath(document.getElementById("sealPic"));
+		//sealPic = "C:\\奥巴马签名.bmp"
+		//alert(sealPic);
 		
 		var objlogin = document.getElementById("HWPostil1").Login("", userType, userAccess,	"", "");
 		//alert("objlogin:" + objlogin);
@@ -85,7 +92,7 @@
 		
 		//如果是图片的base64值则调用方式：SetValue("SET_SEAL_BMPDATA:50", "STRDATA:图片数据" )
 		//var set = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:50", "d:\\奥巴马签名.bmp");
-		var set = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:50", "c:\\奥巴马签名.bmp");
+		var set = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:50", sealPic);
 		//var a = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:50",":PROP:::SIGN:1");
 		
 		//alert("set:" + set );
@@ -100,6 +107,8 @@
 	
 	//坐标盖章
 	function zbseal(searchstring) {
+		sealPic = document.getElementById("sealPic").value;
+		
 		var objlogin = document.getElementById("HWPostil1").Login("", userType, userAccess,	"", "");
 		//alert(objlogin);
 		if (objlogin == "-200") {
@@ -108,7 +117,7 @@
 		var str = searchstring.split(":");
 		
 		//如果是图片的base64值则调用方式：SetValue("SET_SEAL_BMPDATA:50", "STRDATA:图片数据" )
-		var set = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:100", "c:\\奥巴马签名.bmp");
+		var set = document.getElementById("HWPostil1").SetValue("SET_SEAL_BMPDATA:100", sealPic);
 		//alert("set:" + set);
 		
 		var s = document.getElementById("HWPostil1").AddQifengSeal(0,0 + "," + str[0] + ",0," + str[1] + ",50," + str[2], "","AUTO_ADD_SEAL_FROM_PATH");
@@ -185,6 +194,28 @@
 	}
 	
 	
+	/**
+	*函数描述：获取input type=file的图像全路径
+	* @obj input type=file的对象
+	**/
+	function getFullPath(obj) {
+		if(obj) {
+			//ie
+			if (window.navigator.userAgent.indexOf("MSIE")>=1) {
+				obj.select();
+				return document.selection.createRange().text;
+			} else if(window.navigator.userAgent.indexOf("Firefox")>=1) {
+				if(obj.files) {
+				return obj.files.item(0).getAsDataURL();
+			}
+			
+			return obj.value;
+		}
+		return obj.value;
+		}
+	}
+	
+	//工具 -> Internet选项 -> 安全 -> 自定义级别 -> 找到“其他”中的“将本地文件上载至服务器时包含本地目录路径”
 	
 </script>
 
@@ -196,13 +227,15 @@
 	<table width="100%" height="100%">
 		<tr>
 			<td>
-				<input name="button" width="500px" height="500px" type="button" value="打开文档" onClick="loaddoc();" />
+<!-- 				<input name="button" width="500px" height="500px" type="button" value="打开文档" onClick="loaddoc();" /> -->
 				<input name="button" width="500px" height="500px" type="button" value="手动盖章" onClick="seal()" />
 				<input name="button" width="500px" height="500px" type="button" value="自动文字盖章" onClick="autoseal()" />
 				<input name="button" width="500px" height="500px" type="button" value="自动坐标盖章" onClick="zbseal('20000:20000:0')" />
-				<input name="button" width="500px" height="500px" type="button" value="保存到本地" onClick="save();" />
-				<input name="button" width="500px" height="500px" type="button" value="上传到服务器" onClick="upload();" />
-				<input name="button" width="500px" height="500px" type="button" value="另存为" onClick="" />
+<!-- 				<input name="button" width="500px" height="500px" type="button" value="保存到本地" onClick="save();" /> -->
+<!-- 				<input name="button" width="500px" height="500px" type="button" value="上传到服务器" onClick="upload();" /> -->
+				<br/>
+				签单图片 :<input type="file" name="sealPic" id="sealPic"/>
+				
 			</td>
 		</tr>
 		<tr>
