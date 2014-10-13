@@ -5,6 +5,8 @@
  */
 package com.zy.product.service;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.zy.entity.Product;
 import com.zy.product.dao.ProductDao;
+import com.zy.product.repository.ProductRepository;
 
 /**
  * @Project: springdatajpa
@@ -28,6 +31,9 @@ public class ProductService {
 
 	@Autowired
 	private ProductDao productDao;
+	
+	@Autowired
+	private ProductRepository productRepository;
 
 	@Value("${smtp.host}")
 	private String smtphost;
@@ -37,6 +43,15 @@ public class ProductService {
 		boolean ret = false;
 
 		productDao.save(product);
+
+		//测试事务回滚
+		Integer.parseInt("sss");
+		
+		Product product1 = new Product();
+		product1.setCreateDate(new Date());
+		product1.setName("测试2");
+		
+		productRepository.save(product1);
 		
 		logger.debug("smtp.host: " + this.smtphost);
 		return ret;

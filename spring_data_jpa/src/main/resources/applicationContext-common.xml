@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:context="http://www.springframework.org/schema/context"
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:jpa="http://www.springframework.org/schema/data/jpa"
 	xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -10,51 +13,91 @@
 			http://www.springframework.org/schema/aop
 			http://www.springframework.org/schema/aop/spring-aop.xsd
 			http://www.springframework.org/schema/context
-			http://www.springframework.org/schema/context/spring-context.xsd">
+			http://www.springframework.org/schema/context/spring-context.xsd
+			 http://www.springframework.org/schema/data/jpa
+			 http://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
 
 	<context:property-placeholder location="classpath:*.properties" />
-	
+
 	<context:component-scan base-package="com.zy" />
 
-	<tx:annotation-driven transaction-manager="transactionManager"
-		proxy-target-class="true" />
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 
-	<!-- <mvc:annotation-driven/> -->
-
-
-	<bean id="mySqlDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="url" value="${jdbc.url}" />
-		<property name="username" value="${jdbc.username}" />
-		<property name="password" value="${jdbc.password}" />
-		<property name="driverClassName" value="${jdbc.driver}" />
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
 	</bean>
 
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+	<jpa:repositories base-package="com.zy.product.repository" entity-manager-factory-ref="entityManagerFactory" transaction-manager-ref="transactionManager" />
+
+	<!-- 两种配置 http://www.cnblogs.com/taven/archive/2013/10/04/3351841.html 这里使用无persistence.xml配置 -->
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="packagesToScan" value="com.zy.entity" />
+
+		<!-- <property name="jpaVendorAdapter" ref="jpaVendorAdapter" /> -->
 		<property name="dataSource" ref="mySqlDataSource" />
-		<property name="packagesToScan">
-			<list>
-				<value>com.zy.entity</value>
-			</list>
+
+		<!-- 如果使用下面的 ref="jpaVendorAdapter" 这个配置就可以省略 不用重复配置 -->
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
 		</property>
-<!-- 		<property name="mappingResources"> -->
-<!-- 			<list> -->
-<!-- 				<value>product.hbm.xml</value> -->
-<!-- 			</list> -->
-<!-- 		</property> -->
-		<property name="hibernateProperties">
-			<value>
-				hibernate.dialect=org.hibernate.dialect.MySQLDialect
-				<!-- hibernate.show_sql=true -->
-				hibernate.format_sql=true
-				hibernate.hbm2ddl.auto=update
-			</value>
+		<property name="jpaProperties">
+			<props>
+				<!-- 测试用 -->
+				<prop key="hibernate.hbm2ddl.auto">create-drop</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+			</props>
 		</property>
 	</bean>
 
-	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
+<!-- 	<bean id="mySqlDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
+<!-- 		<property name="url" value="${jdbc.url}" /> -->
+<!-- 		<property name="username" value="${jdbc.username}" /> -->
+<!-- 		<property name="password" value="${jdbc.password}" /> -->
+<!-- 		<property name="driverClassName" value="${jdbc.driver}" /> -->
+<!-- 	</bean> -->
+
+<!-- 	<bean id="mySqlDataSource" class="org.logicalcobwebs.proxool.ProxoolDataSource"> -->
+<!-- 		<property name="driver" value="${jdbc.driver}" /> -->
+<!-- 		<property name="driverUrl" value="${jdbc.url}" -->
+<!-- 			<property name="user" value="${jdbc.username}" /> -->
+<!-- 			<property name="password" value="${jdbc.password}" /> -->
+<!-- 			<property name="alias" value="Pool_dbname" /> -->
+<!-- 			<property name="maximumActiveTime" value="300000" /> -->
+<!-- 			<property name="prototypeCount" value="0" /> -->
+<!-- 			<property name="maximumConnectionCount" value="50" /> -->
+<!-- 			<property name="minimumConnectionCount" value="2" /> -->
+<!-- 			<property name="simultaneousBuildThrottle" value="50" /> -->
+<!-- 			<property name="houseKeepingTestSql" value="select CURRENT_DATE" /> -->
+<!-- 	</bean> -->
+
+	<bean id="mySqlDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${c3p0.driverClass}"></property>
+		<property name="jdbcUrl" value="${c3p0.url}"></property>
+		<property name="user" value="${c3p0.user}"></property>
+		<property name="password" value="${c3p0.password}"></property>
+		<property name="acquireIncrement" value="${c3p0.acquireIncrement}"></property>
+		<property name="initialPoolSize" value="${c3p0.initialPoolSize}"></property>
+		<property name="maxIdleTime" value="${c3p0.maxIdleTime}"></property>
+		<property name="maxPoolSize" value="${c3p0.maxPoolSize}"></property>
+		<property name="minPoolSize" value="${c3p0.minPoolSize}"></property>
+		<property name="acquireRetryDelay" value="${c3p0.acquireRetryDelay}"></property>
+		<property name="acquireRetryAttempts" value="${c3p0.acquireRetryAttempts}"></property>
+		<property name="breakAfterAcquireFailure" value="${c3p0.breakAfterAcquireFailure}"></property>
 	</bean>
 
 
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+		<property name="database" value="MYSQL" />
+		<property name="showSql" value="true" />
+		<property name="generateDdl" value="true" />
+		<property name="databasePlatform" value="org.hibernate.dialect.MySQL5Dialect"></property>
+	</bean>
+
+
+	<!-- 虽然Spring提供JpaTemplate类和JpaDaoSupport类，还是建议使用DI的方式注入EntityManager。例子如下： @PersistenceContext private EntityManager em; 另外需要在XML里面注册2个bean。 -->
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"></bean>
+	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"></bean>
 
 </beans>

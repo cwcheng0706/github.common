@@ -5,13 +5,9 @@
  */
 package com.zy.dao;
 
-import javax.sql.DataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -21,21 +17,10 @@ import org.springframework.stereotype.Repository;
  * @Create Time: 2014年9月13日 下午1:48:31
  */
 @Repository
-public class AbstractHibernateDao extends HibernateDaoSupport {
+public class AbstractHibernateDao{
 	
-	protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-	protected JdbcTemplate jdbcTemplate;
-
-	@Autowired
-	public void setDataSource(DataSource dataSource) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
-	}
-
-	@Autowired  
-    public void setSessionFactoryOverride(SessionFactory sessionFactory) {   
-      super.setSessionFactory(sessionFactory);   
-    }
+	@PersistenceContext
+	protected EntityManager entityManager;
+	
 	
 }

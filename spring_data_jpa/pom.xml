@@ -1,42 +1,41 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.zy</groupId>
-  <artifactId>spring_data_jpa</artifactId>
-  <packaging>war</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>spring_data_jpa Maven Webapp</name>
-  <url>http://maven.apache.org</url>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.zy</groupId>
+	<artifactId>spring_data_jpa</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>spring_data_jpa Maven Webapp</name>
+	<url>http://maven.apache.org</url>
 
-<!-- 	<scm> -->
-<!-- 		<connection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</connection> -->
-<!-- 		<url>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</url> -->
-<!-- 		<developerConnection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</developerConnection> -->
-<!-- 	</scm> -->
+	<!-- <scm> -->
+	<!-- <connection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</connection> -->
+	<!-- <url>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</url> -->
+	<!-- <developerConnection>scm:svn:svn://192.168.21.199/repos/project/resolveexcel/01-src/resolveexcel</developerConnection> -->
+	<!-- </scm> -->
 
-<!-- 	<scm> -->
-<!-- 		<connection>scm:git:https://github.com/zy198804065/yz/resolveexcel</connection> -->
-<!-- 		<url>scm:git:https://github.com/zy198804065/yz/resolveexcel</url> -->
-<!-- 		<developerConnection>scm:git:https://github.com/zy198804065/yz/resolveexcel</developerConnection> -->
-<!-- 	</scm> -->
+	<!-- <scm> -->
+	<!-- <connection>scm:git:https://github.com/zy198804065/yz/resolveexcel</connection> -->
+	<!-- <url>scm:git:https://github.com/zy198804065/yz/resolveexcel</url> -->
+	<!-- <developerConnection>scm:git:https://github.com/zy198804065/yz/resolveexcel</developerConnection> -->
+	<!-- </scm> -->
 
-<!-- 	<scm> -->
-<!-- 		<connection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</connection> -->
-<!-- 		<url>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</url> -->
-<!-- 		<developerConnection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</developerConnection> -->
-<!-- 	</scm> -->
+	<!-- <scm> -->
+	<!-- <connection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</connection> -->
+	<!-- <url>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</url> -->
+	<!-- <developerConnection>scm:git:ssh://root@192.168.21.199/opt/.git/git/yz/resolveexcel</developerConnection> -->
+	<!-- </scm> -->
 
-<!-- 	<scm> -->
-<!-- 		<connection>scm:git:git://github.com/sonatype/sample-project.git</connection> -->
-<!-- 		<url>scm:git:git://github.com/sonatype/sample-project.git</url> -->
-<!-- 		<developerConnection>scm:git:git://github.com/sonatype-sample-project.git</developerConnection> -->
-<!-- 	</scm> -->
+	<!-- <scm> -->
+	<!-- <connection>scm:git:git://github.com/sonatype/sample-project.git</connection> -->
+	<!-- <url>scm:git:git://github.com/sonatype/sample-project.git</url> -->
+	<!-- <developerConnection>scm:git:git://github.com/sonatype-sample-project.git</developerConnection> -->
+	<!-- </scm> -->
 
-<!-- 	<scm> -->
-<!-- 		<connection>scm:git:ssh://User ID@Server Address:Port/Project Name</connection> -->
-<!-- 		<url>scm:git:ssh://User ID@Server Address:Port/Project Name</url> -->
-<!-- 		<developerConnection>scm:git:ssh://UserID@Server Address:Port/Project Name</developerConnection> -->
-<!-- 	</scm> -->
+	<!-- <scm> -->
+	<!-- <connection>scm:git:ssh://User ID@Server Address:Port/Project Name</connection> -->
+	<!-- <url>scm:git:ssh://User ID@Server Address:Port/Project Name</url> -->
+	<!-- <developerConnection>scm:git:ssh://UserID@Server Address:Port/Project Name</developerConnection> -->
+	<!-- </scm> -->
 
 
 	<properties>
@@ -50,6 +49,9 @@
 		<axis2.version>1.6.2</axis2.version>
 		<spring.version>4.1.0</spring.version>
 		<hibernate.version>4.3.6</hibernate.version>
+		<mysql.version>5.1.32</mysql.version>
+		<c3p0.version>0.9.5-pre9</c3p0.version>
+		<spring.data.jpa.version>1.7.0</spring.data.jpa.version>
 	</properties>
 
 
@@ -186,6 +188,52 @@
 			<artifactId>spring-test</artifactId>
 			<version>${spring.version}.RELEASE</version>
 		</dependency>
+		
+		<!-- 配置Spring data JPA -->
+		<dependency>
+	        <groupId>org.springframework.data</groupId>
+	        <artifactId>spring-data-jpa</artifactId>
+	        <version>${spring.data.jpa.version}.RELEASE</version>
+	        <exclusions>
+<!-- 				<exclusion> -->
+<!-- 					<groupId>org.springframework.data</groupId> -->
+<!-- 					<artifactId>spring-data-commons</artifactId> -->
+<!-- 				</exclusion> -->
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-orm</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-context</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-aop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-tx</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-beans</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjrt</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+    	</dependency>
+
 
 		<!-- 配置Hibernate -->
 		<dependency>
@@ -193,11 +241,54 @@
 			<artifactId>hibernate-core</artifactId>
 			<version>${hibernate.version}.Final</version>
 		</dependency>
+		<!-- for JPA, use hibernate-entitymanager instead of hibernate-core -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate.version}.Final</version>
+		</dependency>
+		<!-- optional -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-osgi</artifactId> -->
+<!-- 			<version>${hibernate.version}.Final</version> -->
+<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-envers</artifactId>
+			<version>${hibernate.version}.Final</version>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-c3p0</artifactId> -->
+<!-- 			<version>${hibernate.version}.Final</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-proxool</artifactId> -->
+<!-- 			<version>${hibernate.version}.Final</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-infinispan</artifactId> -->
+<!-- 			<version>${hibernate.version}.Final</version> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.hibernate</groupId> -->
+<!-- 			<artifactId>hibernate-ehcache</artifactId> -->
+<!-- 			<version>${hibernate.version}.Final</version> -->
+<!-- 		</dependency> -->
 
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.32</version>
+			<version>${mysql.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.mchange</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>${c3p0.version}</version>
 		</dependency>
 
 	</dependencies>
@@ -206,8 +297,7 @@
 		<finalName>servlet_spring4_hibernate_anno</finalName>
 
 		<!-- 配置配置文件对应的目录。根据settings.xml 里面的变量取配置文件 -->
-		<!-- <resources> <resource> <directory>src/main/resources/${repository.releases.env}</directory> <filtering>true</filtering> 
-			</resource> </resources> -->
+		<!-- <resources> <resource> <directory>src/main/resources/${repository.releases.env}</directory> <filtering>true</filtering> </resource> </resources> -->
 
 		<plugins>
 
@@ -239,24 +329,24 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
-<!-- 				<configuration> -->
-<!-- 					<webResources> -->
-<!-- 						<resource> -->
-<!-- 							<directory>WebContent</directory> -->
-<!-- 						</resource> -->
-<!-- 					</webResources> -->
-<!-- 				</configuration> -->
+				<!-- <configuration> -->
+				<!-- <webResources> -->
+				<!-- <resource> -->
+				<!-- <directory>WebContent</directory> -->
+				<!-- </resource> -->
+				<!-- </webResources> -->
+				<!-- </configuration> -->
 			</plugin>
 
-			<plugin> 
-				<groupId>org.apache.maven.plugins</groupId> 
-				<artifactId>maven-release-plugin</artifactId> 
-				<version>2.4.2</version> 
-				<configuration> 
-					<tagBase>svn://192.168.21.199/repos/project/resolveexcel/01-src/tags</tagBase> 
-					<username>${svn.name}</username> 
-					<password>${svn.password}</password> 
-				</configuration> 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.4.2</version>
+				<configuration>
+					<tagBase>svn://192.168.21.199/repos/project/resolveexcel/01-src/tags</tagBase>
+					<username>${svn.name}</username>
+					<password>${svn.password}</password>
+				</configuration>
 			</plugin>
 
 			<!-- 解决资源文件的编码问题 -->

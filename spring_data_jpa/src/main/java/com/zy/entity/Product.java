@@ -5,6 +5,7 @@
  */
 package com.zy.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -14,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.envers.Audited;
+
 /**
  * @Project: springdatajpa
  * @Author zy
@@ -21,7 +24,13 @@ import javax.persistence.TemporalType;
  * @Create Time: 2014年9月13日 上午9:31:19
  */
 @Entity(name = "t_product")
-public class Product {
+@Audited
+public class Product implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2805197417135535681L;
 
 	@Id
 	@GeneratedValue
