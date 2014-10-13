@@ -6,8 +6,8 @@
 	<name>my_web</name>
 
 	<ordering>
-		<before>
+		<after>
 			<name>spring_web</name>
-		</before>
+		</after>
 	</ordering>
 </web-fragment>
