@@ -39,20 +39,27 @@ public class ProductService {
 	private String smtphost;
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public boolean saveProduce(Product product) {
+	public boolean saveProduceByEntityManager(Product product) {
 		boolean ret = false;
 
 		productDao.save(product);
+		
+		//测试事务回滚
+//		Integer.parseInt("sss");
+		
+		logger.debug("smtp.host: " + this.smtphost);
+		return ret;
+	}
+	
+	@Transactional(propagation = Propagation.REQUIRED)
+	public boolean saveProduceByReponsitory(Product product) {
+		boolean ret = false;
+
+		productRepository.save(product);
 
 		//测试事务回滚
-		Integer.parseInt("sss");
-		
-		Product product1 = new Product();
-		product1.setCreateDate(new Date());
-		product1.setName("测试2");
-		
-		productRepository.save(product1);
-		
+//		Integer.parseInt("sss");
+
 		logger.debug("smtp.host: " + this.smtphost);
 		return ret;
 	}

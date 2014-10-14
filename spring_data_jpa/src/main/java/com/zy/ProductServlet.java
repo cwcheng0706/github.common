@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
@@ -33,6 +34,8 @@ public class ProductServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 7108521079923277538L;
 
+	private final static Logger logger = Logger.getLogger(ProductServlet.class);
+			
 	ProductService productService = null;
 	
 	@Override
@@ -48,12 +51,35 @@ public class ProductServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
 		
-		Product product = new Product();
-		product.setCreateDate(new Date());
-		product.setName("测试1");
 		
-		productService.saveProduce(product );
 		
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				Product product = new Product();
+				product.setCreateDate(new Date());
+				product.setName("测试1");
+				
+				productService.saveProduceByEntityManager(product );
+				
+			}
+		}).start();
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		
+		logger.info("==============再开一线程==============");
+		
+		Product product1 = new Product();
+		product1.setCreateDate(new Date());
+		product1.setName("再开一线程");
+		productService.saveProduceByReponsitory(product1);
 		
 	}
 	
