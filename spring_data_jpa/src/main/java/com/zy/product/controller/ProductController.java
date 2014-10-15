@@ -5,7 +5,6 @@
  */
 package com.zy.product.controller;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,6 +70,12 @@ public class ProductController {
 		
 	}
 	
+	/**
+	 * 使用Spring data jpa 提供的接口操作数据库
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年10月15日 下午5:27:48
+	 */
 	@RequestMapping(value = "/saverep")
 	public void saveByReponsitory() {
 		Product product1 = new Product();
