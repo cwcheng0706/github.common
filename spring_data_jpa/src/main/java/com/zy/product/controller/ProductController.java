@@ -8,18 +8,19 @@ package com.zy.product.controller;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.zy.entity.Product;
+import com.zy.exception.MyException;
 import com.zy.product.service.ProductService;
 import com.zy.product.vo.ProductVo;
 
@@ -30,6 +31,7 @@ import com.zy.product.vo.ProductVo;
  * @Create Time: 2014年9月14日 下午6:47:32
  */
 @Controller
+@RequestMapping("/product")
 public class ProductController {
 	
 	private final static Logger logger = Logger.getLogger(ProductController.class);
@@ -37,16 +39,6 @@ public class ProductController {
 	@Autowired
 	private ProductService productService;
 	
-	@RequestMapping(value = "/index")
-	public ModelAndView index(Model model){
-		return new ModelAndView("/index");
-	}
-	
-	@RequestMapping(value = "/error/500")
-	public String error(Model model){
-		return "/error/500";
-	}
-
 	/**
 	 * 
 	 * @RequestParam 方式传值 如果没有带 ?userName= 则报404错误
@@ -58,15 +50,18 @@ public class ProductController {
 	 * @param userName
 	 * @param vo
 	 */
-	@RequestMapping(value="productem/save",method=RequestMethod.GET)
-	@ResponseBody
-	public void save(@RequestParam("userName") String userName,@ModelAttribute ProductVo vo) {
+	@RequestMapping(value="/saveem",method = RequestMethod.POST)
+	public void save(@RequestParam("userName") String userName,@ModelAttribute ProductVo vo,HttpServletRequest req) {
+		
 
-		try {
-			logger.info("userName : " + new String(userName.getBytes("ISO-8859-1"), "GBK"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		logger.info("req: userName: " + req.getParameter("userName"));
+		
+//		try {
+//			logger.info("userName : " + new String(userName.getBytes("ISO-8859-1"), "UTF-8"));
+//		} catch (UnsupportedEncodingException e) {
+//			e.printStackTrace();
+//		}
+		
 		
 		Product product = new Product();
 		product.setCreateDate(new Date());
@@ -74,35 +69,32 @@ public class ProductController {
 		
 		productService.saveProduceByEntityManager(product );
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-//		logger.info("==============再开一线程==============");
-//		
-//		new Thread(new Runnable() {
-//			
-//			@Override
-//			public void run() {
-//				
-//				Product product1 = new Product();
-//				product1.setCreateDate(new Date());
-//				product1.setName("再开一线程");
-//				productService.saveProduceByReponsitory(product1);
-//				
-//			}
-//		}).start();
-		
 	}
 	
-	@RequestMapping(value = "/productr/save")
+	@RequestMapping(value = "/saverep")
 	public void saveByReponsitory() {
 		Product product1 = new Product();
 		product1.setCreateDate(new Date());
 		product1.setName("再开一线程");
 		productService.saveProduceByReponsitory(product1);
 		
+	}
+	
+	
+	@ExceptionHandler(MyException.class)
+	public void handlerMyException(MyException e) {
+		logger.info("---------------处理MyException------------------");
+	}
+
+	/**
+	 * 用来测试不同url报出的异常是不是会区别调用相应的Hander
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年10月15日 下午4:45:26
+	 */
+	@RequestMapping("/exception")
+	public void testException() {
+		
+		throw new MyException("error");
 	}
 }

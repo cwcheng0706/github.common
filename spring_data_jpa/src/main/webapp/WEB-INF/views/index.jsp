@@ -6,8 +6,11 @@
 <title>首页</title>
 </head>
 <body>
-<form action="">
-	name: <input type="text"/>
+<form action="product/saveem" method="post">
+	userName:<input name="userName" type="text" /><br/>
+	name: <input name="name" type="text"/><br/>
+	<input type="submit" value="submit" />
+	
 </form>
 </body>
 </html>
