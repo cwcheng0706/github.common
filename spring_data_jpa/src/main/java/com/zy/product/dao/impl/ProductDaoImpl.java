@@ -6,6 +6,8 @@
 package com.zy.product.dao.impl;
 
 
+import javax.persistence.EntityManager;
+
 import org.springframework.stereotype.Repository;
 
 import com.zy.dao.AbstractHibernateDao;
@@ -21,8 +23,13 @@ import com.zy.product.dao.ProductDao;
 @Repository
 public class ProductDaoImpl extends AbstractHibernateDao implements ProductDao {
 	
+	
 	public void save(Product product) {
-		this.entityManager.persist(product);
+		EntityManager entityManager = this.entityManagerFactory.createEntityManager();
+		
+		entityManager.getTransaction().begin();
+		entityManager.persist(product);
+		entityManager.getTransaction().commit();
 		
 	}
 

@@ -6,6 +6,7 @@
 package com.zy.product.service;
 
 
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,30 +38,30 @@ public class ProductService {
 	@Value("${smtp.host}")
 	private String smtphost;
 
-	@Transactional(propagation = Propagation.REQUIRED)
 	public boolean saveProduceByEntityManager(Product product) {
 		boolean ret = false;
 
+		
 		productDao.save(product);
 		
 		//测试事务回滚
 //		Integer.parseInt("sss");
 		
 		logger.debug("smtp.host: " + this.smtphost);
+		
 		return ret;
 	}
 	
 	@Transactional(propagation = Propagation.REQUIRED)
-	public boolean saveProduceByReponsitory(Product product) {
-		boolean ret = false;
+	public void saveProduceByReponsitory(Product product) {
 
 		productRepository.save(product);
 
 		//测试事务回滚
 //		Integer.parseInt("sss");
+		
 
 		logger.debug("smtp.host: " + this.smtphost);
-		return ret;
 	}
 
 	public void setProductDao(ProductDao productDao) {

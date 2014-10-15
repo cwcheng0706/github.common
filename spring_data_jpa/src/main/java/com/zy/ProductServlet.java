@@ -52,27 +52,11 @@ public class ProductServlet extends HttpServlet {
 		
 		
 		
+		Product product = new Product();
+		product.setCreateDate(new Date());
+		product.setName("测试11111");
 		
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				
-				Product product = new Product();
-				product.setCreateDate(new Date());
-				product.setName("测试1");
-				
-				productService.saveProduceByEntityManager(product );
-				
-			}
-		}).start();
-
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
+		productService.saveProduceByEntityManager(product );
 		
 		logger.info("==============再开一线程==============");
 		
@@ -80,6 +64,8 @@ public class ProductServlet extends HttpServlet {
 		product1.setCreateDate(new Date());
 		product1.setName("再开一线程");
 		productService.saveProduceByReponsitory(product1);
+		
+		req.getRequestDispatcher("/index.jsp").forward(req, resp);
 		
 	}
 	

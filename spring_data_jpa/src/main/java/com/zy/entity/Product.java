@@ -6,6 +6,7 @@
 package com.zy.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -14,8 +15,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.GroupSequence;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.zy.group.First;
+import com.zy.group.Second;
 
 /**
  * @Project: springdatajpa
@@ -25,6 +32,7 @@ import org.hibernate.envers.Audited;
  */
 @Entity(name = "t_product")
 @Audited
+@GroupSequence({First.class, Second.class, Product.class})  
 public class Product implements Serializable {
 
 	/**
@@ -37,11 +45,17 @@ public class Product implements Serializable {
 	private Long id;
 
 	@Column
+	@NotEmpty(message = "name不能为空", groups={First.class})
+	@Length(min = 5, max = 20, message = "name长度应该在5-20位之间", groups = {Second.class})
 	private String name;
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createDate;
+	
+	@Column
+//	@NotEmpty(message="price不能为空")
+	private BigDecimal price;
 
 	public Long getId() {
 		return id;
@@ -65,6 +79,14 @@ public class Product implements Serializable {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
+	}
+
+	public BigDecimal getPrice() {
+		return price;
+	}
+
+	public void setPrice(BigDecimal price) {
+		this.price = price;
 	}
 
 }
