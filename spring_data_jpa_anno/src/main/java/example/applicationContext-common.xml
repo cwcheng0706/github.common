@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:aop="http://www.springframework.org/schema/aop" 
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+		xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/tx
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://www.springframework.org/schema/aop
+			http://www.springframework.org/schema/aop/spring-aop.xsd
+			http://www.springframework.org/schema/context
+			http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/data/jpa
+			http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+			http://www.springframework.org/schema/mvc
+			http://www.springframework.org/schema/mvc/spring-mvc.xsd ">
+
+	<context:property-placeholder location="classpath:*.properties" />
+	
+	<!-- 排除与相关spring mvc中的注解 -->
+	<context:component-scan base-package="com.zy" >
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" /> -->
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController" /> -->
+		<!-- http://jinnianshilongnian.iteye.com/blog/1866350  @ControllerAdvice注解内部使用@ExceptionHandler(最重要 )、@InitBinder、@ModelAttribute -->
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" /> -->
+	</context:component-scan>
+	
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+	
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<jpa:repositories base-package="com.zy.product.repository" entity-manager-factory-ref="entityManagerFactory" transaction-manager-ref="transactionManager" />
+
+	<!-- 两种配置 http://www.cnblogs.com/taven/archive/2013/10/04/3351841.html 这里使用无persistence.xml配置 -->
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="packagesToScan" value="com.zy.entity" />
+
+		<property name="jpaVendorAdapter" ref="jpaVendorAdapter" />
+		<property name="dataSource" ref="mySqlDataSource" />
+
+		<property name="jpaProperties">
+			<props>
+				<!-- 测试用 -->
+				<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+			</props>
+		</property>
+	</bean>
+
+<!-- 	<bean id="mySqlDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
+<!-- 		<property name="url" value="${jdbc.url}" /> -->
+<!-- 		<property name="username" value="${jdbc.username}" /> -->
+<!-- 		<property name="password" value="${jdbc.password}" /> -->
+<!-- 		<property name="driverClassName" value="${jdbc.driver}" /> -->
+<!-- 	</bean> -->
+
+<!-- 	<bean id="mySqlDataSource" class="org.logicalcobwebs.proxool.ProxoolDataSource"> -->
+<!-- 		<property name="driver" value="${jdbc.driver}" /> -->
+<!-- 		<property name="driverUrl" value="${jdbc.url}" -->
+<!-- 			<property name="user" value="${jdbc.username}" /> -->
+<!-- 			<property name="password" value="${jdbc.password}" /> -->
+<!-- 			<property name="alias" value="Pool_dbname" /> -->
+<!-- 			<property name="maximumActiveTime" value="300000" /> -->
+<!-- 			<property name="prototypeCount" value="0" /> -->
+<!-- 			<property name="maximumConnectionCount" value="50" /> -->
+<!-- 			<property name="minimumConnectionCount" value="2" /> -->
+<!-- 			<property name="simultaneousBuildThrottle" value="50" /> -->
+<!-- 			<property name="houseKeepingTestSql" value="select CURRENT_DATE" /> -->
+<!-- 	</bean> -->
+
+	<bean id="mySqlDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${driverClass}"></property>
+		<property name="jdbcUrl" value="${jdbcUrl}"></property>
+		<property name="user" value="${user}"></property>
+		<property name="password" value="${password}"></property>
+		<property name="acquireIncrement" value="${acquireIncrement}"></property>
+		<property name="initialPoolSize" value="${initialPoolSize}"></property>
+		<property name="maxIdleTime" value="${maxIdleTime}"></property>
+		<property name="maxPoolSize" value="${maxPoolSize}"></property>
+		<property name="minPoolSize" value="${minPoolSize}"></property>
+		<property name="acquireRetryDelay" value="${acquireRetryDelay}"></property>
+		<property name="acquireRetryAttempts" value="${acquireRetryAttempts}"></property>
+		<property name="breakAfterAcquireFailure" value="${breakAfterAcquireFailure}"></property>
+	</bean>
+
+
+	<bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+<!-- 		<property name="database" value="MYSQL" /> -->
+<!-- 		<property name="showSql" value="false" /> -->
+<!-- 		<property name="generateDdl" value="true" /> -->
+<!-- 		<property name="databasePlatform" value="org.hibernate.dialect.MySQL5Dialect"></property> -->
+	</bean>
+
+
+	<!--不在事务管理中，故不推荐使用注入EntityManger 虽然Spring提供JpaTemplate类和JpaDaoSupport类，还是建议使用DI的方式注入EntityManager。例子如下： @PersistenceContext private EntityManager em; 另外需要在XML里面注册2个bean。 -->
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"></bean>
+	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"></bean>
+
+</beans>
