@@ -54,7 +54,7 @@ public class Product implements Serializable {
 	private Date createDate;
 	
 	@Column
-//	@NotEmpty(message="price不能为空")
+	@NotEmpty(message="price不能为空")
 	private BigDecimal price;
 
 	public Long getId() {
