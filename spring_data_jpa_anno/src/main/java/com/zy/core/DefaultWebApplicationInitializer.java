@@ -96,7 +96,7 @@ public class DefaultWebApplicationInitializer implements WebApplicationInitializ
 			 * 指定org.springframework.orm.jpa.LocalEntityManagerFactoryBean在spring配置文件中的名称,默认值为entityManagerFactory 
 			 * 如果LocalEntityManagerFactoryBean在spring中的名称不是entityManagerFactory,该参数一定要指定,否则会出现找不到entityManagerFactory的例外
 			 */
-			registration.setInitParameter("entityManagerFactoryBeanName", "entityManagerFactory");
+			registration.setInitParameter("entityManagerFactoryBeanName", "entityManagerFactoryBean");
 			
 			boolean isMatchAfter = true;
 			EnumSet<DispatcherType> dispatcherTypes =EnumSet.of(DispatcherType.REQUEST,DispatcherType.FORWARD);
