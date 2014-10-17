@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 @Configuration
 @ComponentScan(
@@ -51,6 +52,13 @@ public class SpringAppConfig {
 	public PersistenceExceptionTranslationPostProcessor getPersistenceExceptionTranslationPostProcessor() {
 		PersistenceExceptionTranslationPostProcessor persistenceExceptionTranslationPostProcessor = new PersistenceExceptionTranslationPostProcessor();
 		return persistenceExceptionTranslationPostProcessor;
+	}
+	
+	@Bean(name = "validator1")
+	public LocalValidatorFactoryBean getLocalValidatorFactoryBean() {
+		LocalValidatorFactoryBean localValidatorFactoryBean = new LocalValidatorFactoryBean();
+		
+		return localValidatorFactoryBean;
 	}
 	
 }
