@@ -37,7 +37,7 @@ public class SpringAppEntityManagerFactoryConfig {
 	@Resource(name = "jpaVendorAdapter")
 	private HibernateJpaVendorAdapter jpaVendorAdapter;
 	
-	@Bean(name = "entityManagerFactory")
+	@Bean(name = "entityManagerFactoryBean")
 	public LocalContainerEntityManagerFactoryBean getLocalContainerEntityManagerFactoryBean(){
 		LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 		Properties jpaProperties = new Properties();

@@ -1,7 +1,5 @@
 package com.zy.core.config;
 
-import javax.annotation.Resource;
-import javax.persistence.EntityManagerFactory;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,16 +29,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 		})
 @ImportResource("classpath:applicationContext-properties.xml")
 @EnableTransactionManagement(proxyTargetClass = true)
-@EnableJpaRepositories(basePackages = "com.zy.product.repository")
+
+/** Spring Data JPA 配置 **/
+@EnableJpaRepositories(basePackages = "com.zy.product.repository",transactionManagerRef="transactionManager",entityManagerFactoryRef = "entityManagerFactoryBean")
 public class SpringAppConfig {
 	
-	@Resource(name = "entityManagerFactory")
-	private EntityManagerFactory entityManagerFactory; 
-
 	@Bean(name = "transactionManager")
 	public JpaTransactionManager getJpaTransactionManager() {
 		JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
-//		jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
+//		jpaTransactionManager.setEntityManagerFactory(entityManagerFactory); //会自动注入的 在无使用persitence.xml时
 		return jpaTransactionManager;
 	}
 	
