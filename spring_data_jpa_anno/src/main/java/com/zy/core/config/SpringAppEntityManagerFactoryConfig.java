@@ -52,4 +52,9 @@ public class SpringAppEntityManagerFactoryConfig {
 		localContainerEntityManagerFactoryBean.setPackagesToScan("com.zy.entity");
 		return localContainerEntityManagerFactoryBean;
 	}
+	
+//	@Bean(name = "entityManagerFactory")
+//	public EntityManagerFactory getEntityManagerFactory() {
+//		return getLocalContainerEntityManagerFactoryBean().getObject();
+//	}
 }

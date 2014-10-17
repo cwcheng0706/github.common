@@ -1,6 +1,7 @@
 package com.zy.core.config;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityManagerFactory;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,8 +34,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaRepositories(basePackages = "com.zy.product.repository")
 public class SpringAppConfig {
 	
-//	@Resource(name = "entityManagerFactory")
-//	private EntityManagerFactory entityManagerFactory; 
+	@Resource(name = "entityManagerFactory")
+	private EntityManagerFactory entityManagerFactory; 
 
 	@Bean(name = "transactionManager")
 	public JpaTransactionManager getJpaTransactionManager() {
