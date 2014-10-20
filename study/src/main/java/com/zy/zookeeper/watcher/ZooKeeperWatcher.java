@@ -5,26 +5,38 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.SessionExpiredException;
+import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 public class ZooKeeperWatcher implements Watcher, Runnable {
-
+	
 	private static Log logger = LogFactory.getLog(ZooKeeperWatcher.class);
 
 	private ZooKeeper zooKeeper = null;
 	private String znode;
-
+	private String hosts;
 
 	public ZooKeeper getZooKeeper() {
 		return this.zooKeeper;
 	}
 
-	public void connect(String hosts, String znode) throws IOException, InterruptedException, KeeperException {
-		this.zooKeeper = new ZooKeeper(hosts, 2000, this);
+	public boolean connect(String hosts, String znode) {
+		boolean ret = false;
 		this.znode = znode;
-		this.zooKeeper.exists(znode, true);
+		this.hosts = hosts;
+		try {
+			this.zooKeeper = new ZooKeeper(hosts, 2000, this);
+			this.zooKeeper.exists(znode, true);
+			ret = true;
+		} catch (IOException e) {
+			logger.error("连接Zookeeper服务器异常【" + e + "】");
+		}catch (KeeperException | InterruptedException e) {
+			logger.error("监控节点，Exist【" + this.znode + "】异常【" + e + "】");
+		}
+		return ret;
 	}
 
 	// public void setData(byte[] data) {
@@ -38,15 +50,27 @@ public class ZooKeeperWatcher implements Watcher, Runnable {
 
 	@Override
 	public void process(WatchedEvent event) {
-		System.out.println(event.toString());
+		logger.info(event.toString());
 		try {
-			this.zooKeeper.exists(znode, true);// 不知道为什么一定要加上这句话，下次事件到来时，才会触发process事件
-												// 只能监控当前节点 。不能监控子节点
-			this.zooKeeper.getChildren(znode, true);
-		} catch (Exception e) {
-			logger.error("线程事件处理异常.." + e);
-		}
+			
+			if(event.getState() == KeeperState.Expired) {
+				logger.info("重新连接...");
+				connect(this.hosts,this.znode);
+			}else {
+				// 只能监控当前节点 。不能监控子节点
+				//this.zooKeeper.exists(znode, true);
+				
+				this.zooKeeper.getChildren(znode, true);
+			}
+		} catch(SessionExpiredException e){
+			logger.error(e +"重新注册事件。");
+		}catch (KeeperException e) {
+			logger.error(e);
+		} catch (InterruptedException e) {
+			logger.error(e);
+		}		
 	}
+	
 
 	@Override
 	public void run() {

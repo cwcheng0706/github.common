@@ -1,6 +1,8 @@
 package com.zy.zookeeper.watcher;
 
-import java.io.IOException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -10,12 +12,16 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 public class ConfigCenter implements Watcher {
+	
+	private static Log logger = LogFactory.getLog(ConfigCenter.class);
+	
 	ZooKeeper zk = null;
 	String znode;
 	
 	private String rootNode = "/app1";
 
 	public ConfigCenter(String address, String znode) {
+		
 		this.znode = znode;
 		try {
 			this.zk = new ZooKeeper(address, 3000, this);
@@ -23,18 +29,13 @@ public class ConfigCenter implements Watcher {
 			if (st == null) {
 				this.zk.create(znode, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			this.zk = null;
-		} catch (KeeperException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		}  catch (Exception e) {
+			logger.error("连接Zookeeper服务器异常【" + e + "】");
+		} 
 	}
 
 	public void process(WatchedEvent event) {
-		System.out.println(event.toString());
+		logger.info(event.toString());
 		try {
 			this.zk.exists(rootNode, true);
 		} catch (KeeperException e) {
@@ -49,7 +50,7 @@ public class ConfigCenter implements Watcher {
 			Stat s = this.zk.exists(this.znode, true);
 			this.zk.setData(this.znode, str.getBytes(), s.getVersion());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("修改节点" + this.znode + "异常【" + e +"】");
 		}
 	}
 }
