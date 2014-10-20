@@ -42,6 +42,8 @@ public class DefaultWebApplicationInitializer implements WebApplicationInitializ
 		registerCharacterEncodingFilter(servletContext);
 		
 		registerHttpPutFormContentFilter(servletContext);
+		
+		registerIntrospectorCleanupListener(servletContext);
 	}
 	
 	
@@ -144,5 +146,13 @@ public class DefaultWebApplicationInitializer implements WebApplicationInitializ
 			logger.error("注册HttpPutFormContentFilter异常【" + e + "】");
 		}
 		logger.info("成功注册HttpPutFormContentFilter....");
+	}
+	
+	private void registerIntrospectorCleanupListener(ServletContext servletContext) {
+		servletContext.addListener("org.springframework.web.util.IntrospectorCleanupListener");
+		
+		//or
+//		org.springframework.web.util.IntrospectorCleanupListener introspectorCleanupListener = new org.springframework.web.util.IntrospectorCleanupListener();
+//		servletContext.addListener(introspectorCleanupListener);
 	}
 }
