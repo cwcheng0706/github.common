@@ -50,25 +50,7 @@ public class TestSSLByHttpConn {
 		connection.setSSLSocketFactory(sf);
 		
 	}
-	
-	/**
-	 * 
-	 * @Author zy
-	 * @Company: JL
-	 * @Create Time: 2014年10月21日 下午4:05:01
-	 * @param keyStorePath
-	 * @param password
-	 * @return
-	 * @throws Exception
-	 */
-	private static KeyStore getKeyStore(String keyStorePath,String type,String password) throws Exception{
-		FileInputStream is = new FileInputStream(keyStorePath);
-		KeyStore ks = KeyStore.getInstance(type);
-		ks.load(is,password.toCharArray());
-		is.close();
-		return ks;
-	}
-	
+
 	/**
 	 * @Author zy
 	 * @Company: JL
@@ -103,62 +85,24 @@ public class TestSSLByHttpConn {
 		return sf;
 		
 	}
-
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * 
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年10月21日 下午4:05:01
+	 * @param keyStorePath
+	 * @param password
+	 * @return
+	 * @throws Exception
+	 */
+	private static KeyStore getKeyStore(String keyStorePath,String type,String password) throws Exception{
+		FileInputStream is = new FileInputStream(keyStorePath);
+		KeyStore ks = KeyStore.getInstance(type);
+		ks.load(is,password.toCharArray());
+		is.close();
+		return ks;
+	}
 	
 }
 
