@@ -72,7 +72,7 @@ public class HmacMD5 {
 
 		//摘要
 		String message = Hex.encodeHexString(data);
-		
+		System.out.println(new String(Hex.encodeHex(data)));
 		System.out.println(message);
 
 	}
