@@ -10,7 +10,8 @@ public class TestHashMap {
 	public static void main(String[] args) {
 		
 		
-		//下面是hashcode相同，equals也不同,  key 不会被覆盖，会追加新的Entry
+		//下面是hashcode相同，equals不同,  key 不会被覆盖，会追加新的Entry
+		System.out.println("==========hashcode相同，equals不同============");
 		Student s1 = new Student(Long.valueOf("1"),"11");
 		Student s2 = new Student(Long.valueOf("1"),"22");
 		
@@ -33,20 +34,37 @@ public class TestHashMap {
 		System.out.println(map.get(s2));
 		
 		
+		//下面是hashcode不同，equals相同
+		System.out.println("=============hashcode不同，equals相同=============");
+		Student s11 = new Student(Long.valueOf("1"),"11");
+		Student s22 = new Student(Long.valueOf("2"),"11");
 		
-		System.out.println("==========================");
+		Map<Student,String> mapp = new HashMap<Student,String>();
+		mapp.put(s11, "1");
+		mapp.put(s22, "2");
+		Set<Student> keySett = mapp.keySet();
+		Iterator<Student> iterr = keySett.iterator();
+		while(iterr.hasNext()) {
+			Student key = iterr.next();
+			String value = mapp.get(key);
+			System.out.println("key【" + key + "】 value【" + value + "】");
+		}
+		System.out.println(mapp.get(s11));
+		System.out.println(mapp.get(s22));
 		
 		
-		//下面hashcode不同，equals也不同,  key 不会被覆盖，会新增加Entry
+		
+		
+		//下面hashcode相同，equals也相同,  key 不会被覆盖，会新增加Entry
+		System.out.println("=============hashcode不相同，equals也不相同=============");
 		String a = "1";
-		
-		String b = new String();
-		b.valueOf("1");
+		String b = "2";
+//		String b = new String("");
+//		b.valueOf("1");
 		
 		System.out.println("hashCode  = " + (a.hashCode()==b.hashCode()));
 		System.out.println("equals  = " + a.equals(b));
 		
-		System.out.println("b: "+ b);
 		
 		HashMap<String,String> map1 = new HashMap<String,String>();
 		String str1 = map1.put(a, "1");
@@ -67,17 +85,8 @@ public class TestHashMap {
 //		System.out.println(sun.misc.Hashing.stringHash32((String) b));
 		
 		
-		
-		//hashcode 相等  ,equals也相等，直接覆盖
-		System.out.println("================================");
-		Map<Integer,String> m = new HashMap<Integer,String>();
-		m.put(1, "1");
-		m.put(1, "2");
-		m.put(1, "3");
-		
-		
-		
 		System.out.println("===============================");
+		
 		/**
 		 * 有趣的HashMap.indexFor() 方法
 		 */
