@@ -1,4 +1,4 @@
-package com.zy.testhashmapoverried;
+package com.zy.test.HashMap;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +46,7 @@ public class TestHashMap {
 		System.out.println("hashCode  = " + (a.hashCode()==b.hashCode()));
 		System.out.println("equals  = " + a.equals(b));
 		
+		System.out.println("b: "+ b);
 		
 		HashMap<String,String> map1 = new HashMap<String,String>();
 		String str1 = map1.put(a, "1");
