@@ -33,10 +33,14 @@ public class TestStringEquals {
 		String s2 = new String("accp");
 		String s3 = new String(s1);
 
+		
+		System.out.println("===equals==");
 		System.out.println(s1.equals(s2));
 		System.out.println(s1.equals(s3));
 		System.out.println(s2.equals(s3));
 
+		
+		System.out.println("=== == ==");
 		System.out.println(s1 == s2);
 		System.out.println(s1 == s3);
 		System.out.println(s2 == s3);
@@ -45,6 +49,7 @@ public class TestStringEquals {
 		System.out.println(s2 == "accp");
 		System.out.println(s3 == "accp");
 		
+		System.out.println("===hashCode==");
 		System.out.println(s1.hashCode() == s2.hashCode());
 		System.out.println(s1.hashCode() == s3.hashCode());
 		System.out.println(s2.hashCode() == s3.hashCode());
