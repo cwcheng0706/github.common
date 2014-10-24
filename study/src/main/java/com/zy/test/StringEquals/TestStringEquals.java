@@ -1,5 +1,7 @@
 package com.zy.test.StringEquals;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -18,16 +20,8 @@ public class TestStringEquals {
 
 	public static void main(String[] args) throws Exception {
 
-		// KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-		//
-		// generator.initialize(2048);
-		// KeyPair keyPair = generator.generateKeyPair();
-		// PrivateKey privateKeyPair = keyPair.getPrivate();
-		// byte[] privateBytes = privateKeyPair.getEncoded();
-		//
-		// KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		// KeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateBytes);
-		// Key privateKey = keyFactory.generatePrivate(privateKeySpec);
+		
+		
 
 		String s1 = "accp";
 		String s2 = new String("accp");
