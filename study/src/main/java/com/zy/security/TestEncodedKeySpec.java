@@ -29,7 +29,7 @@ public class TestEncodedKeySpec {
 		Key privateKey = keyFactory.generatePrivate(privateKeySpec);
 		
 		
-		//目前没用11
+		//目前没用112
 		FileOutputStream fos = new FileOutputStream(new File("c:\\test.p12"));
 		fos.write(privateBytes);
 		fos.flush();
