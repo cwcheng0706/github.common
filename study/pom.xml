@@ -358,6 +358,19 @@
 			<version>3.4.6</version>
         </dependency>       
         
+        
+        <!-- 添加加解密组件 -->
+        <dependency>
+	        <groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk15on</artifactId>
+			<version>1.51</version>
+        </dependency>
+        <dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-ext-jdk15on</artifactId>
+			<version>1.51</version>
+        </dependency>
+        
 	</dependencies>
 
 	<build>
