@@ -1,4 +1,4 @@
-package com.zy.security;
+package com.zy.security.jdk;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;
@@ -17,6 +17,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import com.zy.security.Coder;
+
 /**
  * 证书组件
  * 
@@ -28,9 +30,10 @@ import javax.net.ssl.TrustManagerFactory;
 public abstract class CertificateCoder extends Coder {
 
 	/**
-	 * Java密钥库(Java Key Store，JKS)KEY_STORE
+	 * Java密钥库
 	 */
-	public static final String KEY_STORE = "JKS";
+	public static final String KEY_STORE_JKS = "JKS";
+	public static final String KEY_STORE_P12 = "PKCS12";
 
 	public static final String X509 = "X.509";
 	public static final String SunX509 = "SunX509";
@@ -107,7 +110,7 @@ public abstract class CertificateCoder extends Coder {
 	 */
 	private static KeyStore getKeyStore(String keyStorePath, String password) throws Exception {
 		FileInputStream is = new FileInputStream(keyStorePath);
-		KeyStore ks = KeyStore.getInstance(KEY_STORE);
+		KeyStore ks = KeyStore.getInstance(KEY_STORE_JKS);
 		ks.load(is, password.toCharArray());
 		is.close();
 		return ks;
