@@ -1,5 +1,6 @@
 package com.zy.security.jdk;
 
+import java.io.InputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
@@ -53,9 +54,22 @@ public abstract class MessageDigestCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	public static byte[] encryptMD5(DigestInputStream dis) throws Exception {
-
-		return null;
+	public static byte[] encrypt(InputStream in,String algorithm ) throws Exception {
+		DigestInputStream dis = new DigestInputStream(in, MessageDigest.getInstance(algorithm));
+		
+		int buf = 1024;
+		byte[] buffer = new byte[buf];
+		
+		int read = dis.read(buffer);
+		while(read > -1) {
+			read = dis.read(buffer,0,buf);
+		}
+		dis.close();
+		
+		MessageDigest md = dis.getMessageDigest();
+		//消息摘要处理
+		byte[] b = md.digest();
+		return b;
 	}
 
 	/**
