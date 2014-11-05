@@ -10,12 +10,12 @@ public class BaseContorller {
 	
 	@RequestMapping(value = "/index")
 	public ModelAndView index(Model model){
-		return new ModelAndView("/index");
+		return new ModelAndView("index");
 	}
 	
 	@RequestMapping(value = "/error/500")
 	public String error(Model model){
-		return "/error/500";
+		return "error/500";
 	}
 
 }

@@ -311,7 +311,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>servlet_spring4_hibernate_anno</finalName>
+		<finalName>spring_data_jpa</finalName>
 
 		<!-- 配置配置文件对应的目录。根据settings.xml 里面的变量取配置文件 -->
 		<!-- <resources> <resource> <directory>src/main/resources/${repository.releases.env}</directory> <filtering>true</filtering> </resource> </resources> -->
