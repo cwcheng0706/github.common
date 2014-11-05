@@ -33,20 +33,20 @@ public class TestSSL {
 	private static final int HTTPS_PORT = 443;
 
 	// 请求的接口地址post方式url
-	private static final String HTTPS_URL = "https://open.jlfex.com/test/rest?method=jl.order.do" ;
+	private static final String HTTPS_URL = "https://jl.ssl.com/study/dynamicServlet" ;
 	
 	// 请求的接口地址get方式url
 //	private static final String HTTPS_URL = "https://open.jlfex.com/test/rest?method=jl.financefroduct.get&pageSize=10&pageNum=1&timestamp=2014-09-23%2017:30:03&serial_no=9910013000620000046&v=1.0";
 
 	// 用户申请的证书
-	private static final String KEY_STORE_CLIENT_PATH = "C:\\testssl\\006.p12";
+	private static final String KEY_STORE_CLIENT_PATH = "C:\\ssl\\openssl\\twoCA\\user.p12";
 	// p12文件的密码在用户下载包里面的txt文件中
-	private static final String KEY_STORE_PASSWORD = "3ojd8b8fz9dj";
+	private static final String KEY_STORE_PASSWORD = "user123456";
 
 	// 用户下载包里面服务端证书文件（server.cer） 需要按文档步骤生成服务端的信任证书库文件
-	private static final String KEY_STORE_TRUST_PATH = "C:\\testssl\\server.truststore";
+	private static final String KEY_STORE_TRUST_PATH = "C:\\ssl\\openssl\\twoCA\\server.truststore";
 	// 在作生成server.truststore操作时自己设置的密码
-	private static final String KEY_STORE_TRUST_PASSWORD = "IshmwQT7";
+	private static final String KEY_STORE_TRUST_PASSWORD = "server123456";
 
 	public static void main(String[] args) throws Exception {
 		ssl();
