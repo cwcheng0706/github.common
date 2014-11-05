@@ -4,7 +4,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.KeyStore;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
@@ -85,6 +87,7 @@ public class TestSSL {
 				}
 			}
 			SSLSocketFactory socketFactory = new SSLSocketFactory(keyStore, KEY_STORE_PASSWORD, trustStore);
+			socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
 			Scheme sch = new Scheme(SCHEME_HTTPS, HTTPS_PORT, socketFactory);
 			httpClient.getConnectionManager().getSchemeRegistry().register(sch);
@@ -92,7 +95,7 @@ public class TestSSL {
 			
 			HttpPost post = new HttpPost(HTTPS_URL);
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();  
-	        nvps.add(new BasicNameValuePair("timestamp", "2014-09-23 18:30:03"));  
+	        nvps.add(new BasicNameValuePair("timestamp", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())));  
 	        nvps.add(new BasicNameValuePair("v", "1.0"));  
 	        nvps.add(new BasicNameValuePair("serial_no", "9910013000620000046"));
 	        nvps.add(new BasicNameValuePair("name", "test"));
