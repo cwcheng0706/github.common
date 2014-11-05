@@ -10,12 +10,12 @@
 		//http://172.16.2.146:8080/cfcaTest/seal
 		var src
 		if(1 == v) {
-			src = 'http://172.16.2.52:8080/cfcaTest/verify?userId=admin1';
+			src = 'http://172.16.2.2:8080/cfcaTest/verify?userId=admin1';
 			
 			//document.getElementById("myid1").style.display = "none";   //隐藏
 			//document.getElementById("myid").style.display = "block";  //显示
 		}else if(2 == v) {
-			src = 'http://172.16.2.52:8080/cfcaTest/seal';
+			src = 'http://172.16.2.2:8080/cfcaTest/seal';
 			
 			//document.getElementById("myid").style.display = "none";   //隐藏
 			//document.getElementById("myid1").style.display = "block";  //显示
@@ -38,7 +38,7 @@
 			</td>
 			<td>
 				<div  id="myid" style="height: 700px ">
-					<iframe src="http://172.16.2.52:8080/cfcaTest/verify?userId=8160" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="auto" allowtransparency="yes"></iframe>;
+					<iframe src="http://172.16.2.2:8080/cfcaTest/verify?userId=8160" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="auto" allowtransparency="yes"></iframe>;
 				</div>
 <!-- 				<div  id="myid1" style="height: 700px ;display: none"> -->
 <!-- 					<iframe src="http://172.16.2.146:8080/cfcaTest/seal" width="100%" height="100%" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="auto" allowtransparency="yes"></iframe>; -->
