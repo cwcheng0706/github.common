@@ -33,29 +33,36 @@ public class DynamicServlet extends HttpServlet {
 		String cert = req.getHeader("X-SSL-CLIENT-VERIFY");
 		
 		//返回证书字符串base64编码里面还有一些其它多余的标识行
-		String dn = req.getHeader("X-SSL-CLIENT-CERT");
+		String clientCert = req.getHeader("X-SSL-CLIENT-CERT");
 		
 		//返回建立的SSL连接中那些使用的密码字段
-		req.getHeader("X-SSL-SSL_CIPHER");
+		String cipher = req.getHeader("X-SSL-SSL_CIPHER");
 		
 		//返回建立的SSL连接中客户端证书的序列号
-		req.getHeader("X-SSL-SSL_CLIENT_SERIAL");
+		String serial = req.getHeader("X-SSL-SSL_CLIENT_SERIAL");
 		
 		//返回建立的SSL连接中客户端证书的DN主题字段
-		req.getHeader("X-SSL-CLIENT-S-DN");
+		String sDn = req.getHeader("X-SSL-CLIENT-S-DN");
 		
 		//返回建立的SSL连接中客户端证书的DN发行者字段
-		req.getHeader("X-SSL-SSL_CLIENT_I_DN");
+		String iDn = req.getHeader("X-SSL-SSL_CLIENT_I_DN");
 		
 		//返回建立的SSL连接中使用的协议
-		req.getHeader("X-SSL-SSL_PROTOCOL");
+		String protocol = req.getHeader("X-SSL-SSL_PROTOCOL");
 		
-		req.getHeader("X-SSL-SSL_SESSION_ID");
+		String sslSessionId = req.getHeader("X-SSL-SSL_SESSION_ID");
 		
-		req.getHeader("X-SSL-SSL_CLIENT_RAW_CERT");
+		String rawCert = req.getHeader("X-SSL-SSL_CLIENT_RAW_CERT");
 		
-		logger.debug("证书【" + cert + "】");
-		logger.debug("DN【" + dn + "】");
+		logger.debug("服务器检验结果【" + cert + "】");
+		logger.debug("密码:【" + cipher + "】");
+		logger.debug("客户端证书的序列号【" + serial + "】");
+		logger.debug("客户端证书的DN主题【" + sDn + "】");
+		logger.debug("客户端证书的DN发行者字段【" + iDn + "】");
+		logger.debug("使用的协议【" + protocol + "】");
+		logger.debug("SSL会话ID【" + sslSessionId + "】");
+		logger.debug("SSL_CLIENT_RAW_CERT【" + rawCert + "】");
+		logger.debug("证书" + clientCert + "】");
 		
 		req.getRequestDispatcher("/ca.jsp").forward(req, resp);
 	}
