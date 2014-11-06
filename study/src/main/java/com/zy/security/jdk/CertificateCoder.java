@@ -1,14 +1,18 @@
 package com.zy.security.jdk;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.Cipher;
 import javax.net.ssl.HttpsURLConnection;
@@ -16,6 +20,12 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+
+import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import sun.misc.BASE64Decoder;
 
 import com.zy.security.Coder;
 
@@ -28,6 +38,8 @@ import com.zy.security.Coder;
  * @Create Time: 2014年10月21日 下午2:18:36
  */
 public abstract class CertificateCoder extends Coder {
+	
+	private static Log logger = LogFactory.getLog(CertificateCoder.class);
 
 	/**
 	 * Java密钥库
@@ -38,6 +50,65 @@ public abstract class CertificateCoder extends Coder {
 	public static final String X509 = "X.509";
 	public static final String SunX509 = "SunX509";
 	public static final String SSL = "SSL";
+
+	public static final String SSL_CERT_HEADER = "-----BEGIN CERTIFICATE-----";
+	public static final String SSL_CERT_FOOTER = "-----END CERTIFICATE-----";
+	
+
+	public static X509Certificate getX509Certificate(String cert) {
+		X509Certificate x509Certificate = null;
+		if (null != cert && !"".equals(cert.trim())) {
+			cert = cert.trim();
+			cert = cert.replaceAll(SSL_CERT_HEADER, "").replaceAll(SSL_CERT_FOOTER, "");
+			cert = replaceBlank(cert);
+			try{
+				// Base64解码
+				BASE64Decoder decoder = new BASE64Decoder();
+				byte[] byteCert = decoder.decodeBuffer(cert);
+				// 转换成二进制流
+				ByteArrayInputStream bain = new ByteArrayInputStream(byteCert);
+				CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
+				x509Certificate = (X509Certificate) certificateFactory.generateCertificate(bain);
+				String info = x509Certificate.getSubjectDN().getName();
+				logger.debug("证书拥有者:" + info);
+			}catch(Exception e) {
+				logger.error("读取证书异常." + e);
+			}
+		}
+
+		return x509Certificate;
+	}
+	
+	public static X509CRL loadX509CRL(String crlFilePath) {
+		X509CRL crl = null;
+		FileInputStream in = null;
+		try{
+			in = new FileInputStream(crlFilePath);
+			CertificateFactory cf = CertificateFactory.getInstance(X509);
+			crl = (X509CRL) cf.generateCRL(in);
+			
+		}catch(Exception e) {
+			logger.error("加载吊销列表异常." + e);
+		}finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				in = null;
+				logger.error(e);
+			}
+		}
+		return crl;
+	}
+
+	public static String replaceBlank(String str) {
+		String dest = "";
+		if (str != null) {
+			Pattern p = Pattern.compile("\\s*|\t|\r|\n");
+			Matcher m = p.matcher(str);
+			dest = m.replaceAll("");
+		}
+		return dest;
+	}
 
 	/**
 	 * 由KeyStore获得私钥
