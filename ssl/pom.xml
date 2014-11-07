@@ -177,7 +177,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>WebContent/WEB-INF/lib/</classpathPrefix>
-							<mainClass>com.jl.ssl.MonitorMain</mainClass>
+							<mainClass>com.test.ssl.SSLMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
