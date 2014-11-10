@@ -1,7 +1,11 @@
 package com.zy.security.jdk;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -79,11 +83,37 @@ public abstract class CertificateCoder extends Coder {
 		return x509Certificate;
 	}
 	
-	public static X509CRL loadX509CRL(String crlFilePath) {
+	public static X509CRL loadX509CRL(String httpCRL) {
+		X509CRL crl = null;
+		InputStream in = null;
+		try{
+			
+			URL url = new URL(httpCRL);  
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();  
+            conn.setRequestMethod("GET");  
+            conn.setConnectTimeout(5 * 1000);  
+            in = conn.getInputStream();
+			CertificateFactory cf = CertificateFactory.getInstance(X509);
+			crl = (X509CRL) cf.generateCRL(in);
+			
+		}catch(Exception e) {
+			logger.error("加载吊销列表异常." + e);
+		}finally {
+			try {
+				in.close();
+			} catch (IOException e) {
+				in = null;
+				logger.error(e);
+			}
+		}
+		return crl;
+	}
+	
+	public static X509CRL loadX509CRL(File LocalFile) {
 		X509CRL crl = null;
 		FileInputStream in = null;
 		try{
-			in = new FileInputStream(crlFilePath);
+			in = new FileInputStream(LocalFile);
 			CertificateFactory cf = CertificateFactory.getInstance(X509);
 			crl = (X509CRL) cf.generateCRL(in);
 			
