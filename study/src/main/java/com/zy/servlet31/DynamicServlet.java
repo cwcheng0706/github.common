@@ -78,8 +78,10 @@ public class DynamicServlet extends HttpServlet {
 		if(null != clientCert) {
 			X509Certificate cert = CertificateCoder.getX509Certificate(clientCert);
 			X509CRL crl = CertificateCoder.loadX509CRL("");
-			isRevoked = crl.isRevoked(cert);
-			logger.debug("当前用户证书吊销状态【" + isRevoked + "】");
+			if(null != crl) {
+				isRevoked = crl.isRevoked(cert);
+				logger.debug("当前用户证书吊销状态【" + isRevoked + "】");
+			}
 			
 		}
 		if(null != sslSessionId) {
