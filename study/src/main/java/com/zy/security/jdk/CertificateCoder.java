@@ -100,7 +100,9 @@ public abstract class CertificateCoder extends Coder {
 			logger.error("加载吊销列表异常." + e);
 		}finally {
 			try {
-				in.close();
+				if(null != in) {
+					in.close();
+				}
 			} catch (IOException e) {
 				in = null;
 				logger.error(e);
@@ -121,7 +123,9 @@ public abstract class CertificateCoder extends Coder {
 			logger.error("加载吊销列表异常." + e);
 		}finally {
 			try {
-				in.close();
+				if(null != in) {
+					in.close();
+				}
 			} catch (IOException e) {
 				in = null;
 				logger.error(e);
