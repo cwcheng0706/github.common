@@ -1,11 +1,16 @@
 package com.zy.security.jdk;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -14,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +34,8 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 
 import sun.misc.BASE64Decoder;
 
@@ -42,7 +50,7 @@ import com.zy.security.Coder;
  * @Create Time: 2014年10月21日 下午2:18:36
  */
 public abstract class CertificateCoder extends Coder {
-	
+
 	private static Log logger = LogFactory.getLog(CertificateCoder.class);
 
 	/**
@@ -57,15 +65,23 @@ public abstract class CertificateCoder extends Coder {
 
 	public static final String SSL_CERT_HEADER = "-----BEGIN CERTIFICATE-----";
 	public static final String SSL_CERT_FOOTER = "-----END CERTIFICATE-----";
-	
 
+	/**
+	 * 输入参数为base64编码的证书串
+	 * 
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年11月18日 下午2:40:35
+	 * @param cert
+	 * @return
+	 */
 	public static X509Certificate getX509Certificate(String cert) {
 		X509Certificate x509Certificate = null;
 		if (null != cert && !"".equals(cert.trim())) {
 			cert = cert.trim();
 			cert = cert.replaceAll(SSL_CERT_HEADER, "").replaceAll(SSL_CERT_FOOTER, "");
 			cert = replaceBlank(cert);
-			try{
+			try {
 				// Base64解码
 				BASE64Decoder decoder = new BASE64Decoder();
 				byte[] byteCert = decoder.decodeBuffer(cert);
@@ -75,32 +91,65 @@ public abstract class CertificateCoder extends Coder {
 				x509Certificate = (X509Certificate) certificateFactory.generateCertificate(bain);
 				String info = x509Certificate.getSubjectDN().getName();
 				logger.debug("证书拥有者:" + info);
-			}catch(Exception e) {
+			} catch (Exception e) {
 				logger.error("读取证书异常." + e);
 			}
 		}
 
 		return x509Certificate;
 	}
-	
+
+	/**
+	 * 输入参数：证书文件
+	 * 
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年11月18日 下午2:45:35
+	 * @param file
+	 * @return
+	 */
+	public static X509Certificate getX509Certificate(File file) {
+		X509Certificate x509Certificate = null;
+		InputStream inStream = null;
+		try {
+			inStream = new FileInputStream(file);
+			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			x509Certificate = (X509Certificate) cf.generateCertificate(inStream);
+			String info = x509Certificate.getSubjectDN().getName();
+			logger.debug("证书拥有者:" + info);
+		} catch (Exception e) {
+			logger.error("证书加载异常." + e);
+		} finally {
+			if (inStream != null) {
+				try {
+					inStream.close();
+				} catch (IOException e) {
+					logger.error("关闭流异常." + e);
+				}
+			}
+		}
+		return x509Certificate;
+
+	}
+
 	public static X509CRL loadX509CRL(String httpCRL) {
 		X509CRL crl = null;
 		InputStream in = null;
-		try{
-			
-			URL url = new URL(httpCRL);  
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();  
-            conn.setRequestMethod("GET");  
-            conn.setConnectTimeout(5 * 1000);  
-            in = conn.getInputStream();
+		try {
+
+			URL url = new URL(httpCRL);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("GET");
+			conn.setConnectTimeout(5 * 1000);
+			in = conn.getInputStream();
 			CertificateFactory cf = CertificateFactory.getInstance(X509);
 			crl = (X509CRL) cf.generateCRL(in);
-			
-		}catch(Exception e) {
+
+		} catch (Exception e) {
 			logger.error("加载吊销列表异常." + e);
-		}finally {
+		} finally {
 			try {
-				if(null != in) {
+				if (null != in) {
 					in.close();
 				}
 			} catch (IOException e) {
@@ -110,20 +159,20 @@ public abstract class CertificateCoder extends Coder {
 		}
 		return crl;
 	}
-	
+
 	public static X509CRL loadX509CRL(File LocalFile) {
 		X509CRL crl = null;
 		FileInputStream in = null;
-		try{
+		try {
 			in = new FileInputStream(LocalFile);
 			CertificateFactory cf = CertificateFactory.getInstance(X509);
 			crl = (X509CRL) cf.generateCRL(in);
-			
-		}catch(Exception e) {
+
+		} catch (Exception e) {
 			logger.error("加载吊销列表异常." + e);
-		}finally {
+		} finally {
 			try {
-				if(null != in) {
+				if (null != in) {
 					in.close();
 				}
 			} catch (IOException e) {
@@ -142,6 +191,52 @@ public abstract class CertificateCoder extends Coder {
 			dest = m.replaceAll("");
 		}
 		return dest;
+	}
+
+	/**
+	 * 输入参数是p8 格式的文件
+	 * openssl pkcs8 -topk8 -inform PEM -outform DER -in zhuyong001key.pem -out pkcs8_der.key -nocrypt
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年11月18日 下午5:12:39
+	 * @param pemFile
+	 * @return
+	 */
+	public static PrivateKey getPrivateKey(File pemFile) {
+
+		PrivateKey privateKey = null;
+		
+		FileInputStream fis = null;
+		ByteArrayOutputStream bos = null;
+		try {
+			fis = new FileInputStream(pemFile);
+			bos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[2048];
+			int len = 0;
+			while (-1 != (len = fis.read(buffer))) {
+				bos.write(buffer, 0, len);
+			}
+
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(bos.toByteArray());
+			privateKey = kf.generatePrivate(keySpec);
+
+		} catch (Exception e) {
+			logger.error("加载私钥异常" + e);
+		} finally {
+			try {
+				if (null != bos) {
+					bos.close();
+				}
+				if (null != fis) {
+					fis.close();
+				}
+			} catch (IOException e) {
+				logger.error("关闭流异常." + e);
+			}
+		}
+
+		return privateKey;
 	}
 
 	/**
@@ -283,6 +378,20 @@ public abstract class CertificateCoder extends Coder {
 
 		return cipher.doFinal(data);
 
+	}
+	
+	public static byte[] decryptByPrivateKey(byte[] data,PrivateKey privateKey) {
+		byte[] ret = null;
+		try{
+			// 对数据加密
+			Cipher cipher = Cipher.getInstance(privateKey.getAlgorithm());
+			cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+			ret = cipher.doFinal(data);
+		}catch(Exception e) {
+			logger.error("私钥解密异常." + e);
+		}
+		return ret;
 	}
 
 	/**
