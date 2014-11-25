@@ -77,14 +77,15 @@ public class CertificateCoderTest {
 		// 解密1
 		byte[] b2 = CertificateCoder.decryptByPrivateKey(b1,privateKey);
 		
-		System.out.println("解密后【" + new String(b2) +"】");
+		System.out.println("1解密后【" + new String(b2) +"】");
 
 		//解密2
 		byte[] b3 =CertificateCoder.decryptByPrivateKey(b1,CertificateCoder.getPrivateKey(new File("D:\\ssl\\79.110\\pkcs8_der.key")));
-		System.out.println("解密后【" + new String(b3) +"】");
+		System.out.println("2解密后【" + new String(b3) +"】");
 		
-		
-		
+		//解密3
+		byte[] b4 =CertificateCoder.decryptByPrivateKey(b1,CertificateCoder.getPrivaateKeyByBC(new File("D:\\ssl\\79.110\\pkcs8_der.key")));
+		System.out.println("3解密后【" + new String(b4) + "】");
 	}
 
 	@Test

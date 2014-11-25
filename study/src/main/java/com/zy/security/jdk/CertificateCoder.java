@@ -38,6 +38,8 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 
 import sun.misc.BASE64Decoder;
+import sun.security.pkcs.PKCS8Key;
+import sun.security.util.DerValue;
 
 import com.zy.security.Coder;
 
@@ -191,6 +193,50 @@ public abstract class CertificateCoder extends Coder {
 			dest = m.replaceAll("");
 		}
 		return dest;
+	}
+	
+	public static PrivateKey getPrivaateKeyByBC(File pemFile) {
+		
+		try {
+			FileInputStream in = new FileInputStream(pemFile);
+	
+			// If the provided InputStream is encrypted, we need a password to decrypt
+			// it. If the InputStream is not encrypted, then the password is ignored
+			// (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
+			DerValue arg0 = new DerValue(in);
+			PrivateKey privateKey = PKCS8Key.parseKey(arg0);
+			logger.debug(privateKey.getFormat());
+			
+			logger.debug(privateKey);
+			
+		}catch(Exception e) {
+			
+		}
+		
+//		PKCS8Key pkcs8 = new PKCS8Key(in, "changeit".toCharArray() );
+//
+//		// If an unencrypted PKCS8 key was provided, then this actually returns
+//		// exactly what was originally passed in (with no changes).  If an OpenSSL
+//		// key was provided, it gets reformatted as PKCS #8 first, and so these
+//		// bytes will still be PKCS #8, not OpenSSL.
+//		byte[] decrypted = pkcs8.getDecryptedBytes();
+//		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec( decrypted );
+//
+//		// A Java PrivateKey object is born.
+//		PrivateKey pk = null;
+//		if ( pkcs8.isDSA() )
+//		{
+//		  pk = KeyFactory.getInstance( "DSA" ).generatePrivate( spec );
+//		}
+//		else if ( pkcs8.isRSA() )
+//		{
+//		  pk = KeyFactory.getInstance( "RSA" ).generatePrivate( spec );
+//		}
+//
+//		// For lazier types:
+//		pk = pkcs8.getPrivateKey();
+//		
+		return null;
 	}
 
 	/**
