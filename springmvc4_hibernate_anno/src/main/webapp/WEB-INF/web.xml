@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+	metadata-complete="true">
+
+
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:applicationContext-*.xml</param-value>
+	</context-param>
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<listener>
+		<listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+	</listener>
+
+
+	<!-- 字符编码过虑器 -->
+	<filter>
+		<filter-name>encodingFilter</filter-name> 
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class> 
+		<init-param> 
+			<param-name>encoding</param-name> 
+			<param-value>UTF-8</param-value> 
+		</init-param> 
+		<init-param>
+			<param-name>forceEncoding</param-name>
+	      	<param-value>true</param-value>
+	    </init-param>
+	</filter> 
+	<filter-mapping> 
+		  <filter-name>encodingFilter</filter-name> 
+		  <url-pattern>/*</url-pattern> 
+	</filter-mapping> 
+	
+	
+	<!-- 配置Filter -->
+	<filter>
+		<filter-name>OpenEntityManagerInViewFilter</filter-name>
+		<filter-class>org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter</filter-class>
+<!-- 		<async-supported>true</async-supported> -->
+
+<!-- 		<init-param> -->
+			<!-- 指定org.springframework.orm.jpa.LocalEntityManagerFactoryBean在spring配置文件中的名称,默认值为entityManagerFactory 如果LocalEntityManagerFactoryBean在spring中的名称不是entityManagerFactory,该参数一定要指定,否则会出现找不到entityManagerFactory的例外 -->
+<!-- 			<param-name>entityManagerFactoryBeanName</param-name> -->
+<!-- 			<param-value>entityManagerFactory</param-value> -->
+<!-- 		</init-param> -->
+	</filter>
+	<filter-mapping>
+		<filter-name>OpenEntityManagerInViewFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
+	<!-- 
+		HttpPutFormContentFilter过滤器的作为就是获取put表单的值，并将之传递到Controller中标注了method为RequestMethod.put的方法中
+		该过滤器只能接受enctype值为application/x-www-form-urlencoded的表单
+	 -->
+	<filter>
+		<filter-name>httpPutFormFilter</filter-name>
+		<filter-class>org.springframework.web.filter.HttpPutFormContentFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>httpPutFormFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
+	
+
+	<!-- Spring MVC 核心控制器 -->
+	<servlet>
+		<servlet-name>springMVC</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<!-- 加载 带有@Configuration的类 -->
+<!-- 		<init-param> -->
+<!-- 			<param-name>contextClass</param-name> -->
+<!-- 			<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value> -->
+<!-- 		</init-param> -->
+<!-- 		<init-param> -->
+<!-- 			<param-name>contextConfigLocation</param-name> -->
+<!-- 			<param-value>com.acme.web.MvcConfig</param-value> -->
+<!-- 		</init-param> -->
+		
+		<!-- 加载Spring mvc xml配置 -->
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath*:springMVC.xml</param-value>
+		</init-param>
+	</servlet>
+
+	<!-- 这里配置的/ 如果配置成/*会有很鬼异的问题 转到jsp时 会以html文本方式展示 因为 response headlers 没有 Content-Type:text/html;charset=UTF-8 -->
+	<servlet-mapping>
+		<servlet-name>springMVC</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+
+
+	<!-- 自定义servlet -->
+
+</web-app>
