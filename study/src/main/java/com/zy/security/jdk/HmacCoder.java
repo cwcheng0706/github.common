@@ -1,19 +1,12 @@
-package com.zy.security;
+package com.zy.security.jdk;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Hex;
+public abstract class HmacCoder {
 
-/**
- * @Project: study
- * @Author zy
- * @Company: JL
- * @Create Time: 2014年10月22日 上午10:51:39
- */
-public class HmacMD5 {
 
 	public static final String CHARSET_UTF8 = "UTF-8";
 	public static final String ALGORITHM_HMACMD5 = "HmacMD5";
@@ -27,7 +20,7 @@ public class HmacMD5 {
 	 * @return
 	 * @throws Exception
 	 */
-	private static byte[] initHmacMD5Key(String algorithm) throws Exception {
+	public static byte[] initHmacKey(String algorithm) throws Exception {
 		// 初始化KeyGenerator
 		KeyGenerator keyGenerator = KeyGenerator.getInstance(algorithm);
 
@@ -49,7 +42,7 @@ public class HmacMD5 {
 	 * @return
 	 * @throws Exception
 	 */
-	private static byte[] encodeDataHmacMD5(String algorithm, byte[] key,byte[] msgData) throws Exception {
+	public static byte[] encrypt(String algorithm, byte[] key,byte[] msgData) throws Exception {
 		// 密钥还原
 		SecretKey secretKey = new SecretKeySpec(key, algorithm);
 
@@ -65,15 +58,4 @@ public class HmacMD5 {
 
 	}
 
-	public static void main(String[] args) throws Exception {
-		byte[] key = initHmacMD5Key(ALGORITHM_HmacSHA512);
-		byte[] msgData = "测试".getBytes(CHARSET_UTF8);
-		byte[] data = encodeDataHmacMD5(ALGORITHM_HmacSHA512, key,msgData);
-
-		//摘要
-		String message = Hex.encodeHexString(data);
-		System.out.println(new String(Hex.encodeHex(data)));
-		System.out.println(message);
-
-	}
 }
