@@ -196,7 +196,7 @@ public abstract class CertificateCoder extends Coder {
 	}
 	
 	public static PrivateKey getPrivaateKeyByBC(File pemFile) {
-		
+		PrivateKey privateKey = null;
 		try {
 			FileInputStream in = new FileInputStream(pemFile);
 	
@@ -204,13 +204,11 @@ public abstract class CertificateCoder extends Coder {
 			// it. If the InputStream is not encrypted, then the password is ignored
 			// (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
 			DerValue arg0 = new DerValue(in);
-			PrivateKey privateKey = PKCS8Key.parseKey(arg0);
+			privateKey = PKCS8Key.parseKey(arg0);
 			logger.debug(privateKey.getFormat());
-			
 			logger.debug(privateKey);
-			
 		}catch(Exception e) {
-			
+			logger.error(e);
 		}
 		
 //		PKCS8Key pkcs8 = new PKCS8Key(in, "changeit".toCharArray() );
@@ -236,7 +234,7 @@ public abstract class CertificateCoder extends Coder {
 //		// For lazier types:
 //		pk = pkcs8.getPrivateKey();
 //		
-		return null;
+		return privateKey;
 	}
 
 	/**
