@@ -22,6 +22,8 @@ import com.zy.security.Coder;
 public abstract class DHCoder extends Coder {
 	
 	public static final String ALGORITHM_SECRETKEY = "AES";
+	
+	public static final String ALGORITHM = "AES/ECB/PKCS5Padding";
 
 	/**
 	 * 初始化密钥对
@@ -121,7 +123,7 @@ public abstract class DHCoder extends Coder {
 	public static byte[] encrypt(byte[] data, byte[] key) throws Exception {
 		SecretKey secretKey = new SecretKeySpec(key, ALGORITHM_SECRETKEY);
 		
-		Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
+		Cipher cipher = Cipher.getInstance(ALGORITHM);
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 		
 		return cipher.doFinal(data);
@@ -130,7 +132,7 @@ public abstract class DHCoder extends Coder {
 	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
 		SecretKey secretKey = new SecretKeySpec(key, ALGORITHM_SECRETKEY);
 		
-		Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
+		Cipher cipher = Cipher.getInstance(ALGORITHM);
 		cipher.init(Cipher.DECRYPT_MODE, secretKey);
 		
 		return cipher.doFinal(data);

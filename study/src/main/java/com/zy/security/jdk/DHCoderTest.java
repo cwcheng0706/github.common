@@ -34,6 +34,19 @@ public abstract class DHCoderTest extends Coder {
 		//s2密钥解密
 		byte[] decryptData = DHCoder.decrypt(encryptData, s2.getEncoded());
 		System.out.println("s2 解密后：" + new String(decryptData,"UTF-8"));
+		
+		/**
+		 *  7608dc12a2d61a40b6afc4653e5d525be971969833c2ccc816e48c7bcbf08647
+			7608dc12a2d61a40b6afc4653e5d525be971969833c2ccc816e48c7bcbf08647
+			
+			s1 加密后：7a932d0439fd7ba0cd140dd325c1458a
+			s2 解密后：加密。。
+			
+			7ee72027ab0fbcea586b2380e65ec6caea822d319f44224ba99f3a795b34cef6
+			7ee72027ab0fbcea586b2380e65ec6caea822d319f44224ba99f3a795b34cef6
+			s1 加密后：52bfacb00dac86fef25a29c1cf81e246
+			s2 解密后：加密。。
+		 */
 	}
 
 	private static KeyPair initSenderKeyPair() throws Exception {
