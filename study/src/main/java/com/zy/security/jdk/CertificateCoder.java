@@ -436,7 +436,7 @@ public abstract class CertificateCoder extends Coder {
 	public static byte[] decryptByPrivateKey(byte[] data,String p8CertificatePath) {
 		byte[] ret = null;
 		try{
-			PrivateKey privateKey = getPrivaateKeyByBC(new File(p8CertificatePath));
+			PrivateKey privateKey = getPrivateKey(new File(p8CertificatePath));
 			
 			// 对数据加密
 			Cipher cipher = Cipher.getInstance(privateKey .getAlgorithm());
