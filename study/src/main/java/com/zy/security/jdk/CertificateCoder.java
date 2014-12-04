@@ -424,6 +424,40 @@ public abstract class CertificateCoder extends Coder {
 
 	}
 	
+	/**
+	 * 私钥解密
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年12月4日 下午12:59:56
+	 * @param data
+	 * @param p8CertificatePath
+	 * @return
+	 */
+	public static byte[] decryptByPrivateKey(byte[] data,String p8CertificatePath) {
+		byte[] ret = null;
+		try{
+			PrivateKey privateKey = getPrivaateKeyByBC(new File(p8CertificatePath));
+			
+			// 对数据加密
+			Cipher cipher = Cipher.getInstance(privateKey .getAlgorithm());
+			cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+			ret = cipher.doFinal(data);
+		}catch(Exception e) {
+			logger.error("私钥解密异常." + e);
+		}
+		return ret;
+	}
+	
+	/**
+	 * 私钥解密
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年12月4日 下午12:49:56
+	 * @param data
+	 * @param privateKey
+	 * @return
+	 */
 	public static byte[] decryptByPrivateKey(byte[] data,PrivateKey privateKey) {
 		byte[] ret = null;
 		try{
@@ -457,6 +491,7 @@ public abstract class CertificateCoder extends Coder {
 		return cipher.doFinal(data);
 
 	}
+	
 
 	/**
 	 * 验证Certificate
