@@ -31,13 +31,13 @@ public abstract class DHCoder extends Coder {
 	 * @return
 	 * @throws NoSuchAlgorithmException
 	 */
-	public KeyPair initKeyPair() throws Exception {
+	public static KeyPair initKeyPair() throws Exception {
 		KeyPair keyPair = null;
 		
 		//实例化密钥对生成器
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DH");
 		//初始化密钥对生成器
-		keyPairGenerator.initialize(1034);
+		keyPairGenerator.initialize(1024);
 		//生成密钥对
 		keyPair = keyPairGenerator.generateKeyPair();
 		
@@ -54,7 +54,7 @@ public abstract class DHCoder extends Coder {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidAlgorithmParameterException
 	 */
-	public KeyPair initKeyPair(PublicKey publicKey) throws Exception {
+	public static KeyPair initKeyPair(PublicKey publicKey) throws Exception {
 		KeyPair keyPair = null;
 		
 		KeyFactory keyFactory = KeyFactory.getInstance("DH");
@@ -81,7 +81,7 @@ public abstract class DHCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	public SecretKey initSecretKey(byte[] _publicKey,byte[] _privateKey) throws Exception {
+	public static SecretKey initSecretKey(byte[] _publicKey,byte[] _privateKey) throws Exception {
 		SecretKey secretKey = null;
 		
 		//实例化密钥工厂
@@ -123,6 +123,15 @@ public abstract class DHCoder extends Coder {
 		
 		Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+		
+		return cipher.doFinal(data);
+	}
+	
+	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
+		SecretKey secretKey = new SecretKeySpec(key, ALGORITHM_SECRETKEY);
+		
+		Cipher cipher = Cipher.getInstance(secretKey.getAlgorithm());
+		cipher.init(Cipher.DECRYPT_MODE, secretKey);
 		
 		return cipher.doFinal(data);
 	}
