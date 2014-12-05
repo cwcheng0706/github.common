@@ -196,7 +196,7 @@ public abstract class CertificateCoder extends Coder {
 	}
 	
 	public static PrivateKey getPrivaateKeyByBC(File pemFile) {
-		
+		PrivateKey privateKey = null;
 		try {
 			FileInputStream in = new FileInputStream(pemFile);
 	
@@ -204,13 +204,11 @@ public abstract class CertificateCoder extends Coder {
 			// it. If the InputStream is not encrypted, then the password is ignored
 			// (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
 			DerValue arg0 = new DerValue(in);
-			PrivateKey privateKey = PKCS8Key.parseKey(arg0);
+			privateKey = PKCS8Key.parseKey(arg0);
 			logger.debug(privateKey.getFormat());
-			
 			logger.debug(privateKey);
-			
 		}catch(Exception e) {
-			
+			logger.error(e);
 		}
 		
 //		PKCS8Key pkcs8 = new PKCS8Key(in, "changeit".toCharArray() );
@@ -236,7 +234,7 @@ public abstract class CertificateCoder extends Coder {
 //		// For lazier types:
 //		pk = pkcs8.getPrivateKey();
 //		
-		return null;
+		return privateKey;
 	}
 
 	/**
@@ -426,6 +424,40 @@ public abstract class CertificateCoder extends Coder {
 
 	}
 	
+	/**
+	 * 私钥解密
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年12月4日 下午12:59:56
+	 * @param data
+	 * @param p8CertificatePath
+	 * @return
+	 */
+	public static byte[] decryptByPrivateKey(byte[] data,String p8CertificatePath) {
+		byte[] ret = null;
+		try{
+			PrivateKey privateKey = getPrivateKey(new File(p8CertificatePath));
+			
+			// 对数据加密
+			Cipher cipher = Cipher.getInstance(privateKey .getAlgorithm());
+			cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+			ret = cipher.doFinal(data);
+		}catch(Exception e) {
+			logger.error("私钥解密异常." + e);
+		}
+		return ret;
+	}
+	
+	/**
+	 * 私钥解密
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年12月4日 下午12:49:56
+	 * @param data
+	 * @param privateKey
+	 * @return
+	 */
 	public static byte[] decryptByPrivateKey(byte[] data,PrivateKey privateKey) {
 		byte[] ret = null;
 		try{
@@ -459,6 +491,7 @@ public abstract class CertificateCoder extends Coder {
 		return cipher.doFinal(data);
 
 	}
+	
 
 	/**
 	 * 验证Certificate

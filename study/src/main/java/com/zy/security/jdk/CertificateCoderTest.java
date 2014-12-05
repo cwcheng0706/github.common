@@ -1,25 +1,16 @@
 package com.zy.security.jdk;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.encoders.Hex;
 import org.junit.Test;
 
 /**
@@ -36,6 +27,25 @@ public class CertificateCoderTest {
 	private String keyStorePath = "d:/zlex.keystore";
 	private String clientKeyStorePath = "d:/zlex-client.keystore";
 	private String clientPassword = "654321";
+	
+	/**
+	 * 公钥加密，私钥解密
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年12月3日 下午2:33:51
+	 * @throws Exception
+	 */
+	@Test
+	public void test1() throws Exception {
+		// 公钥加密
+		byte[] encryptData = CertificateCoder.encryptByPublicKey("测试".getBytes("UTF-8"), "D:\\ssl\\79.110\\zhuyong001\\zhuyong001.crt");
+		System.out.println("加密后：" + Hex.toHexString(encryptData));
+		
+		//私钥解密
+		byte[] decryptData = CertificateCoder.decryptByPrivateKey(encryptData, "D:\\ssl\\79.110\\zhuyong001\\zhuyong001p8.key");
+		System.out.println("解密后：" + new String(decryptData,"UTF-8"));
+		
+	}
 
 	@Test
 	public void testGetX509Certificate() throws Exception {
@@ -84,8 +94,8 @@ public class CertificateCoderTest {
 		System.out.println("2解密后【" + new String(b3) +"】");
 		
 		//解密3
-		byte[] b4 =CertificateCoder.decryptByPrivateKey(b1,CertificateCoder.getPrivaateKeyByBC(new File("D:\\ssl\\79.110\\pkcs8_der.key")));
-		System.out.println("3解密后【" + new String(b4) + "】");
+//		byte[] b4 =CertificateCoder.decryptByPrivateKey(b1,CertificateCoder.getPrivaateKeyByBC(new File("D:\\ssl\\79.110\\pkcs8_der.key")));
+//		System.out.println("3解密后【" + new String(b4) + "】");
 	}
 
 	@Test
