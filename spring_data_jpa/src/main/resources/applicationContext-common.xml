@@ -6,6 +6,7 @@
 		xmlns:context="http://www.springframework.org/schema/context"
 		xmlns:jpa="http://www.springframework.org/schema/data/jpa"
 		xmlns:mvc="http://www.springframework.org/schema/mvc"
+		xmlns:mongo="http://www.springframework.org/schema/data/mongo"
 	xsi:schemaLocation="
 			http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -18,7 +19,9 @@
 			http://www.springframework.org/schema/data/jpa
 			http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
 			http://www.springframework.org/schema/mvc
-			http://www.springframework.org/schema/mvc/spring-mvc.xsd ">
+			http://www.springframework.org/schema/mvc/spring-mvc.xsd 
+			http://www.springframework.org/schema/data/mongo  
+			http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
 	<context:property-placeholder location="classpath:*.properties" />
 	
@@ -108,5 +111,19 @@
 	<!--不在事务管理中，故不推荐使用注入EntityManger 虽然Spring提供JpaTemplate类和JpaDaoSupport类，还是建议使用DI的方式注入EntityManager。例子如下： @PersistenceContext private EntityManager em; 另外需要在XML里面注册2个bean。 -->
 	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"></bean>
 	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"></bean>
+	
+	
+	
+	<!-- MongoDB -->
+	<mongo:mongo id="mongo" replica-set="172.16.3.199:27017" >
+	</mongo:mongo>
+	
+	<mongo:db-factory dbname="zhuyong" />
+	<bean id="anotherMongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
+	</bean>
+	
+<!-- 	<mongo:mapping-converter base-package="com.snowstore.poseidon.neptune.mongodb.entity" />	 -->
+<!-- 	<mongo:repositories base-package="com.snowstore.poseidon.neptune.mongodb -->
 
 </beans>

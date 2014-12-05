@@ -53,6 +53,7 @@
 		<spring.data.jpa.version>1.7.0.RELEASE</spring.data.jpa.version>
 		<hibernate.version>4.3.6.Final</hibernate.version>
 		<hibernate.validator.version>5.1.2.Final</hibernate.validator.version>
+		<spring.data.mongodb.version>1.6.1.RELEASE</spring.data.mongodb.version>
 	</properties>
 
 
@@ -242,6 +243,12 @@
 			</exclusions>
     	</dependency>
     	
+    	<!-- 配置 Spring data mongoDB -->
+    	<dependency>
+	        <groupId>org.springframework.data</groupId>
+	        <artifactId>spring-data-mongodb</artifactId>
+	        <version>${spring.data.mongodb.version}</version>
+	    </dependency>
     	
 
 
