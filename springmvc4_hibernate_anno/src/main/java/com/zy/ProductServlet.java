@@ -52,7 +52,7 @@ public class ProductServlet extends HttpServlet {
 		product.setCreateDate(new Date());
 		product.setName("测试1");
 		
-		productService.saveProduce(product );
+		productService.save(product );
 		
 		
 	}

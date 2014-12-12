@@ -33,7 +33,7 @@ public class ProductService {
 	private String smtphost;
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	public boolean saveProduce(Product product) {
+	public boolean save(Product product) {
 		boolean ret = false;
 
 		productDao.save(product);

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Repository;
 
 import com.zy.dao.AbstractHibernateDao;
 import com.zy.entity.Product;
+import com.zy.entity.User;
 import com.zy.product.dao.ProductDao;
+import com.zy.product.dao.UserDao;
 
 /**
  * @Project: springdatajpa
@@ -23,20 +25,20 @@ import com.zy.product.dao.ProductDao;
  * @Create Time: 2014年9月13日 上午10:08:18
  */
 @Repository
-public class ProductDaoImpl extends AbstractHibernateDao implements ProductDao {
+public class UserDaoImpl extends AbstractHibernateDao implements UserDao {
 
-	public void save(Product product) {
+	public void save(User user) {
 
 		//新增1
-		this.getHibernateTemplate().save(product);
+		this.getHibernateTemplate().save(user);
 
 		// Integer.parseInt("sss");
 
 		//新增2
 //		this.jdbcTemplate.execute("INSERT INTO t_product(id,NAME,createDate) VALUES('11111','朱勇',NOW())");
 
-//		//查询1
-//		List<Map<String, Object>> ret = this.jdbcTemplate.queryForList("select * from t_product");
+		//查询1
+//		List<Map<String, Object>> ret = this.jdbcTemplate.queryForList("select * from t_user");
 //
 //		System.out.println("==" + ret.size());
 		

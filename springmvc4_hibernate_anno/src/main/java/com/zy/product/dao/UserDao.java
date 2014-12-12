@@ -5,7 +5,7 @@
  */
 package com.zy.product.dao;
 
-import com.zy.entity.Product;
+import com.zy.entity.User;
 
 /**
  * @Project: springdatajpa
@@ -13,8 +13,8 @@ import com.zy.entity.Product;
  * @Company: 
  * @Create Time: 2014年9月13日 上午10:07:18
  */
-public interface ProductDao {
+public interface UserDao {
 
-	public void save(Product product);
+	public void save(User user);
 	
 }

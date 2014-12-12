@@ -5,23 +5,71 @@
  */
 package com.zy.product;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.zy.entity.Product;
+import com.zy.entity.User;
+import com.zy.product.service.ProductService;
+import com.zy.product.service.UserService;
+
+
 @Controller
+@RequestMapping("/test")
 public class ProductController {
+	
+	private final static Logger logger = Logger.getLogger(ProductController.class);
 
-	@RequestMapping(value = "/findSignedAsset")
-	@ResponseBody
-	public ModelAndView save() {
+	@Autowired
+	private ProductService productService;
+	
+	@Autowired
+	private UserService userService;
+	
+	
+	@RequestMapping(value="/saveProduct",method = RequestMethod.GET)
+	public void saveProdcut(HttpServletRequest req) {
 
-		return new ModelAndView("", "", null);
+		logger.info("==========save product========");
+		
+		for(int i = 0 ; i < 100; i++) {
+			Product product = new Product();
+			product.setCreateDate(new Date());
+			product.setName("朱勇product_" + i);
+			
+			productService.save(product);
+		}
+		
 	}
+	
+	@RequestMapping(value="/saveUser",method = RequestMethod.GET)
+	public void saveUser(HttpServletRequest req) {
+
+		logger.info("=========save user=========");
+	
+		User u = new User();
+		u.setName("朱勇user_");
+		u.setSex("1");
+		u.setCreateDate(new Date());
+		userService.save(u);
+	
+	}
+	
+	
+	
+	
+	
+
 
 	@RequestMapping(value = "/helloworld.do")
 	public ModelAndView hello() {

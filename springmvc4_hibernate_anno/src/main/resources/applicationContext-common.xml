@@ -22,13 +22,6 @@
 
 	<context:property-placeholder location="classpath:*.properties" />
 	
-	<context:component-scan base-package="com.zy" />
-
-	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
-	
-<!-- 	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"> -->
-<!-- 		<property name="sessionFactory" ref="mySqlSessionFactory" /> -->
-<!-- 	</bean> -->
 	
 	<!-- 排除与相关spring mvc中的注解 -->
 	<context:component-scan base-package="com.zy" >
@@ -38,9 +31,13 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" />
 	</context:component-scan>
 	
-	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
-	
+	<context:component-scan base-package="com.zy" />
 
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"  />
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="mySqlSessionFactory" />
+	</bean>
 
 	<bean id="mySqlSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="mySqlDataSource" />
@@ -100,6 +97,6 @@
 		<property name="breakAfterAcquireFailure" value="${c3p0.breakAfterAcquireFailure}"></property>
 	</bean>
 
-	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"></bean>
+<!-- 	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"></bean> -->
 
 </beans>

@@ -21,7 +21,7 @@ import org.springframework.stereotype.Repository;
  * @Create Time: 2014年9月13日 下午1:48:31
  */
 @Repository
-public class AbstractHibernateDao extends HibernateDaoSupport {
+public abstract class AbstractHibernateDao extends HibernateDaoSupport {
 	
 	protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
@@ -32,10 +32,10 @@ public class AbstractHibernateDao extends HibernateDaoSupport {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
-
+	
 	@Autowired  
     public void setSessionFactoryOverride(SessionFactory sessionFactory) {   
-      super.setSessionFactory(sessionFactory);   
+      super.setSessionFactory(sessionFactory);
     }
 	
 }
