@@ -115,7 +115,7 @@
 	
 	
 	<!-- MongoDB -->
-	<mongo:mongo id="mongo" replica-set="172.16.230.183:30000,172.16.230.184:30000" >
+	<mongo:mongo id="mongo" replica-set="172.16.3.199:50000" >
 		<mongo:options connections-per-host="8"
                    threads-allowed-to-block-for-connection-multiplier="4"
                    connect-timeout="1000"
@@ -128,7 +128,7 @@
                    write-timeout="0"
                    write-fsync="true"/>
 	</mongo:mongo>
-	<mongo:db-factory dbname="zhuyong" mongo-ref="mongo" username="zhuyong1" password="123456" />
+	<mongo:db-factory dbname="zhuyong" mongo-ref="mongo" />
 	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>
 	</bean>
@@ -140,7 +140,4 @@
 
 
 	
-<!-- 	<mongo:mapping-converter base-package="com.snowstore.poseidon.neptune.mongodb.entity" />	 -->
-<!-- 	<mongo:repositories base-package="com.snowstore.poseidon.neptune.mongodb -->
-
 </beans>
