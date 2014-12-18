@@ -33,18 +33,17 @@ public class TestSSL2 {
 	private static final int HTTPS_PORT = 443;
 
 	// 请求的接口地址post方式url
-	private static final String HTTPS_URL = "https://ssl.jl.com/study/dynamicServlet" ;
+	private static final String HTTPS_URL = "" ;
 	
 	// 请求的接口地址get方式url
-//	private static final String HTTPS_URL = "https://open.jlfex.com/test/rest?method=jl.financefroduct.get&pageSize=10&pageNum=1&timestamp=2014-09-23%2017:30:03&serial_no=9910013000620000046&v=1.0";
 
 	// 用户申请的证书
-	private static final String KEY_STORE_CLIENT_PATH = "D:\\ssl\\79.110\\zhuyong001\\zhuyong001.p12";
+	private static final String KEY_STORE_CLIENT_PATH = "C:\\ssl\\product-test\\006\\006.p12";
 	// p12文件的密码在用户下载包里面的txt文件中
-	private static final String KEY_STORE_PASSWORD = "user123456";
+	private static final String KEY_STORE_PASSWORD = "111";
 
 	// 用户下载包里面服务端证书文件（server.cer） 需要按文档步骤生成服务端的信任证书库文件
-	private static final String KEY_STORE_TRUST_PATH = "D:\\ssl\\79.110\\ssl.jl.com.truststore";
+	private static final String KEY_STORE_TRUST_PATH = "C:\\ssl\\product-test\\006\\server.truststore";
 	// 在作生成server.truststore操作时自己设置的密码
 	private static final String KEY_STORE_TRUST_PASSWORD = "server123456";
 

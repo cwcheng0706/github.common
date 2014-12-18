@@ -21,12 +21,8 @@ public class Test {
 //
 		String tsFilePath = "C:\\server.truststore";
 		String serverTrusStorePass = "123456";
-//		String url = "https://open.jlfex.com:8443/atlantis/rest?method=jl.order.get&timestamp=2014-08-25 16:25:03&format=json&v=1.0&orderCodes=2014010000139&serial_no=9900002100000000011" ;
-//		       url = "https://open.jlfex.com:8443/atlantis/rest?method=jl.order.get&timestamp=2014-08-25 17:15:03&format=json&v=1.0&orderCodes=2014010000139&  serial_no=9900002100000110512";
-//			   url = "https://open.jlfex.com:8443/atlantis/rest?method=jl.order.cancel&timestamp=2014-08-26 08:58:03&format=json&v=1.0&orderCode=2014010000191&serial_no=9900002100000110516";
-//			   url = "https://open.jlfex.com:8443/atlantis/rest?method=jl.file.get&timestamp=2014-08-26 09:50:03&format=json&serial_no=9910003000620000046&v=1.0&fileId=83054";
 		
-		String url = "https://open.jlfex.com/test/rest?method=jl.financefroduct.get&pageSize=10&pageNum=1&timestamp=2014-09-15%2011:50:03&serial_no=9910003000620000046&v=1.0";
+		String url = "";
 		
 		url = url.replace(" ", "%20");
 		

@@ -36,8 +36,6 @@ public class TestSSL {
 	private static final String HTTPS_URL = "https://jl.ssl.com/study/dynamicServlet" ;
 	
 	// 请求的接口地址get方式url
-//	private static final String HTTPS_URL = "https://open.jlfex.com/test/rest?method=jl.financefroduct.get&pageSize=10&pageNum=1&timestamp=2014-09-23%2017:30:03&serial_no=9910013000620000046&v=1.0";
-
 	// 用户申请的证书
 	private static final String KEY_STORE_CLIENT_PATH = "C:\\ssl\\openssl\\twoCA\\user.p12";
 	// p12文件的密码在用户下载包里面的txt文件中

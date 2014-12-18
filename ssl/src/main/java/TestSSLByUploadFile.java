@@ -40,7 +40,6 @@ public class TestSSLByUploadFile {
 	private static final String HTTPS_URL = "https://jl.ssl.com:8443/poseidon-atlantis/upload.do" ;
 	
 	// 请求的接口地址get方式url
-//	private static final String HTTPS_URL = "https://open.jlfex.com/test/rest?method=jl.financefroduct.get&pageSize=10&pageNum=1&timestamp=2014-09-23%2017:30:03&serial_no=9910013000620000046&v=1.0";
 
 	// 用户申请的证书
 	private static final String KEY_STORE_CLIENT_PATH = "C:\\ssl\\client.p12";

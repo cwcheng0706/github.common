@@ -49,11 +49,11 @@ public class HttpClientUtils {
 	private static final String KEY_STORE_TYPE_P12 = "PKCS12";
 	private static final String SCHEME_HTTPS = "https";
 	private static final int HTTPS_PORT = 8443;
-	private static final String HTTPS_URL = "https://open.jlfex.com/atlantis/rest?method=jl.order.get&timestamp=2014-08-25%2B16:25:03&format=json&v=1.0&orderCodes=2014010000139&serial_no=9900002100000000011";
+	private static final String HTTPS_URL = "";
 	private static final String KEY_STORE_CLIENT_PATH = "C:\\https\\401.p12";
 	private static final String KEY_STORE_TRUST_PATH = "C:\\https\\server.truststore";
 	private static final String KEY_STORE_PASSWORD = "bz65ne0wlfv0";
-	private static final String KEY_STORE_TRUST_PASSWORD = "IshmwQT7";
+	private static final String KEY_STORE_TRUST_PASSWORD = "111";
 
 	private static final String CONTENT_TYPE_PDF = "application/pdf";
 	private static final String CONTENT_TYPE_JSON = "application/json";
