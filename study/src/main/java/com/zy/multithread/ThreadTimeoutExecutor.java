@@ -7,6 +7,8 @@ package com.zy.multithread;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @Project: study
@@ -21,6 +23,10 @@ public class ThreadTimeoutExecutor {
 		Thread t  = new WorkTimeoutThread(3000);
 		t.start();
 		
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+//		executor.execute(new WorkTimeoutThread(1000));
+//		executor.submit(new WorkTimeoutThread(1000));
+		
 		System.out.println("main end");
 	}
 }
@@ -30,6 +36,7 @@ class WorkTimeoutThread extends Thread{
 	private long timeoutSecond;
 	
 	public WorkTimeoutThread(long timeoutSecond) {
+		this.setName("WorkThread");
 		Thread daemon = new Thread(new DaemonThread(System.currentTimeMillis(),timeoutSecond,this));
 		daemon.setDaemon(true);
 		this.timeoutSecond = timeoutSecond;
@@ -42,7 +49,7 @@ class WorkTimeoutThread extends Thread{
 		System.out.println("work start");
 		try{
 			
-			Thread.sleep(3400);
+			Thread.sleep(4000);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -68,6 +75,8 @@ class DaemonThread extends Thread {
 		this.startTime = startTime;
 		this.timeoutSecond = timeoutSecond;
 		this.workThread = workThread;
+		this.setDaemon(true);
+		this.setName("DeamonThread");
 		
 	}
 	
@@ -75,7 +84,7 @@ class DaemonThread extends Thread {
 	public void run() {
 		while(true) {
 			long t = System.currentTimeMillis() - startTime;
-			System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "-计算超时...." + t);
+			System.out.println("当前线程[name=" + this.getName() + " Daemon=" + this.isDaemon() + "]  " + this.isInterrupted() +"  " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + "-计算超时...." + t);
 			try {
 				if(timeoutSecond < t) {
 					timeout();
