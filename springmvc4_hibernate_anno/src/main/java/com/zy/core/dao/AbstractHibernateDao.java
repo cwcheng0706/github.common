@@ -3,7 +3,7 @@
  * @Company: 
  * @Create Time: 2014年9月13日 下午1:48:31
  */
-package com.zy.dao;
+package com.zy.core.dao;
 
 import javax.sql.DataSource;
 

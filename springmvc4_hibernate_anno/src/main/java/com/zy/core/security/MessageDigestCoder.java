@@ -1,0 +1,150 @@
+package com.zy.core.security;
+
+import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+
+public abstract class MessageDigestCoder {
+
+	public static final String CHARSET_UTF8 = "UTF-8";
+
+	public static final String KEY_SHA = "SHA";
+	public static final String KEY_MD5 = "MD5";
+
+	/**
+	 * MAC算法可选以下多种算法
+	 * 
+	 * <pre>
+	 * HmacMD5 
+	 * HmacSHA1 
+	 * HmacSHA256 
+	 * HmacSHA384 
+	 * HmacSHA512
+	 * </pre>
+	 */
+	public static final String KEY_MAC = "HmacMD5";
+
+	/**
+	 * MD5加密
+	 * 
+	 * @param data
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] encryptMD5(byte[] data) throws Exception {
+
+		MessageDigest md5 = MessageDigest.getInstance(KEY_MD5);
+		md5.update(data);
+
+		return md5.digest();
+
+	}
+
+	/**
+	 * 
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2014年10月27日 下午3:55:41
+	 * @param dis
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] encrypt(InputStream in, String algorithm) throws Exception {
+		DigestInputStream dis = new DigestInputStream(in, MessageDigest.getInstance(algorithm));
+
+		int buf = 1024;
+		byte[] buffer = new byte[buf];
+
+		int read = dis.read(buffer);
+		while (read > -1) {
+			read = dis.read(buffer, 0, buf);
+		}
+		dis.close();
+
+		MessageDigest md = dis.getMessageDigest();
+		// 消息摘要处理
+		byte[] b = md.digest();
+		return b;
+	}
+
+	/**
+	 * SHA加密
+	 * 
+	 * @param data
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] encryptSHA(byte[] data) throws Exception {
+
+		MessageDigest sha = MessageDigest.getInstance(KEY_SHA);
+		sha.update(data);
+
+		return sha.digest();
+
+	}
+
+	/**
+	 * 
+	 * @Author zy
+	 * @Company:
+	 * @Create Time: 2014年10月27日 上午10:49:57
+	 * @param data
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] encryptHMac(byte[] data) throws Exception {
+		String key = initMacKey();
+		return encryptHMAC(data, key);
+	}
+
+	/**
+	 * 初始化HMAC密钥
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private static String initMacKey() throws Exception {
+		KeyGenerator keyGenerator = KeyGenerator.getInstance(KEY_MAC);
+
+		SecretKey secretKey = keyGenerator.generateKey();
+		return encryptBASE64(secretKey.getEncoded());
+	}
+
+	/**
+	 * HMAC加密
+	 * 
+	 * @param data
+	 * @param key
+	 * @return
+	 * @throws Exception
+	 */
+	private static byte[] encryptHMAC(byte[] data, String key) throws Exception {
+
+		SecretKey secretKey = new SecretKeySpec(decryptBASE64(key), KEY_MAC);
+		Mac mac = Mac.getInstance(secretKey.getAlgorithm());
+		mac.init(secretKey);
+
+		return mac.doFinal(data);
+
+	}
+
+	public static byte[] decryptBASE64(String data) {
+		return Base64.decodeBase64(data);
+	}
+
+	public static String encryptBASE64(byte[] data) {
+		return Base64.encodeBase64String(data);
+	}
+
+	public static String encryptHex(byte[] data) {
+		return Hex.encodeHexString(data);
+	}
+}

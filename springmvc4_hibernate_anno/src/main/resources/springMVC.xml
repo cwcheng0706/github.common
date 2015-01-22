@@ -39,7 +39,7 @@
     <mvc:default-servlet-handler /> 
 
 	<!-- 定义首页 -->
-<!-- 	<mvc:view-controller path="/" view-name="redirect:/index" /> -->
+	<mvc:view-controller path="/" view-name="redirect:/index" />
 	
 	
 	<!-- 将Controller抛出的异常转到特定View,  -->

@@ -12,10 +12,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.zy.dao.AbstractHibernateDao;
-import com.zy.entity.Product;
+import com.zy.core.dao.AbstractHibernateDao;
 import com.zy.entity.User;
-import com.zy.product.dao.ProductDao;
 import com.zy.product.dao.UserDao;
 
 /**
@@ -54,6 +52,16 @@ public class UserDaoImpl extends AbstractHibernateDao implements UserDao {
 
 //		System.out.println("==" + list.size());
 
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public User getUserByMail(String mail) {
+		List<User> list = (List<User>)getHibernateTemplate().find("select u from User u where u.mail = ?", mail);
+		if(null != list && 0 < list.size()) {
+			return list.get(0);
+		}
+		return null;
 	}
 
 }

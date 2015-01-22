@@ -28,6 +28,10 @@ public class UserService {
 
 	@Autowired
 	private UserDao userDao;
+	
+	public User getUserByMail(String mail){
+		return userDao.getUserByMail(mail);
+	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public boolean save(User user) {

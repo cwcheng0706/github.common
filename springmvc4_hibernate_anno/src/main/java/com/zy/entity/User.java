@@ -36,6 +36,12 @@ public class User {
 	private String name;
 	
 	@Column
+	private String mail;
+	
+	@Column
+	private String password;
+	
+	@Column
 	private String sex;
 
 	@Column
@@ -72,6 +78,22 @@ public class User {
 
 	public void setSex(String sex) {
 		this.sex = sex;
+	}
+
+	public String getMail() {
+		return mail;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setMail(String mail) {
+		this.mail = mail;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 

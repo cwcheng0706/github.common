@@ -17,4 +17,7 @@ public interface UserDao {
 
 	public void save(User user);
 	
+	public User getUserByMail(String mail);
+	
+	
 }
