@@ -10,6 +10,7 @@
 	<!--过滤不被装饰的页面 -->
 	<excludes>
 		<pattern>/login*</pattern>
+		<pattern>/register*</pattern>
 		<pattern>/exclude.jsp</pattern>
 		<pattern>/exclude/*</pattern>
 	</excludes>
