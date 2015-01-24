@@ -7,7 +7,7 @@
 </head>
 <body>
 <form action="product/saveem" method="post">
-	userName:<input name="userName" type="text" /><br/>
+	userName:<input name="userName" type="text" value="${test }" /><br/>
 	name: <input name="name" type="text"/><br/>
 	<input type="submit" value="submit" />
 	

@@ -29,6 +29,7 @@ public class UserService {
 	@Autowired
 	private UserDao userDao;
 	
+	@Transactional(readOnly = true)
 	public User getUserByMail(String mail){
 		return userDao.getUserByMail(mail);
 	}

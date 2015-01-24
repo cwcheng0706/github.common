@@ -4,24 +4,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.zy.core.controller.BaseContorller;
 import com.zy.core.security.MessageDigestCoder;
 import com.zy.entity.User;
 import com.zy.product.service.UserService;
 import com.zy.web.vo.UserVo;
 
 @Controller
-public class LoginController {
+public class UserController extends BaseContorller{
 
-	private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 	
 	@Autowired
 	private UserService userService;
 	
+	/**
+	 * 登录页面
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2015年1月23日 上午9:15:24
+	 * @return
+	 */
 	@RequestMapping(value="/login")
 	public String login() {
 		return "/admin/login";
+	}
+	
+	/**
+	 * 注册页面
+	 * @Author zy
+	 * @Company: JL
+	 * @Create Time: 2015年1月23日 上午9:15:34
+	 * @return
+	 */
+	@RequestMapping(value = "/registerin")
+	public String registerin(){
+		return "/admin/register";
+	}
+	
+	@RequestMapping(value = "/registeron")
+	public String registeron(Model model) {
+		model.addAttribute("test", "test");
+		return this.index(model);
 	}
 	
 	@RequestMapping(value="/logon")
@@ -52,4 +79,5 @@ public class LoginController {
 			return "redirect:/login";
 		}
 	}
+	
 }
