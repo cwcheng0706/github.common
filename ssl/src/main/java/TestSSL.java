@@ -35,6 +35,7 @@ public class TestSSL {
 	// 请求的接口地址post方式url
 	private static final String HTTPS_URL = "https://jl.ssl.com/study/dynamicServlet" ;
 	
+	
 	// 请求的接口地址get方式url
 	// 用户申请的证书
 	private static final String KEY_STORE_CLIENT_PATH = "C:\\ssl\\openssl\\twoCA\\user.p12";
