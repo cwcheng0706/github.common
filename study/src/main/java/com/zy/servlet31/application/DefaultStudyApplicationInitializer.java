@@ -16,7 +16,7 @@ public class DefaultStudyApplicationInitializer implements StudyApplicationIniti
 		logger.info("动态注册Servlet...");
 		
 		ctx.addServlet("dynamicServlet", DynamicServlet.class)
-		   .addMapping("/dynamicServlet");
+		   .addMapping("/rest");
 		
 	}
 

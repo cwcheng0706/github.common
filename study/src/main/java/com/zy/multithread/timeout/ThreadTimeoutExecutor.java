@@ -3,7 +3,7 @@
  * @Company: 
  * @Create Time: 2015年1月18日 下午1:38:02
  */
-package com.zy.multithread;
+package com.zy.multithread.timeout;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

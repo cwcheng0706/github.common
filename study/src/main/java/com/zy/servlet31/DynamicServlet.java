@@ -64,6 +64,8 @@ public class DynamicServlet extends HttpServlet {
 		
 		String rawCert = req.getHeader("X_SSL_CLIENT_RAW_CERT");
 		
+		logger.info("============" + String.valueOf(req.getParameter("method")));
+		
 		logger.debug("服务器检验结果【" + String.valueOf(clientVerify) + "】");
 		logger.debug("密码【" + String.valueOf(cipher) + "】");
 		logger.debug("客户端证书的序列号【" + String.valueOf(serial) + "】");
