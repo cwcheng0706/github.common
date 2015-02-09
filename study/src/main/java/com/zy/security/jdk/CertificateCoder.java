@@ -3,21 +3,15 @@ package com.zy.security.jdk;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
@@ -25,7 +19,6 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,32 +32,11 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
 
 import sun.misc.BASE64Decoder;
 import sun.security.pkcs.PKCS8Key;
 import sun.security.util.DerValue;
 
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PRIndirectReference;
-import com.itextpdf.text.pdf.PdfAnnotation;
-import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfFormField;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfSignatureAppearance;
-import com.itextpdf.text.pdf.PdfSignatureAppearance.RenderingMode;
-import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.security.BouncyCastleDigest;
-import com.itextpdf.text.pdf.security.DigestAlgorithms;
-import com.itextpdf.text.pdf.security.ExternalDigest;
-import com.itextpdf.text.pdf.security.ExternalSignature;
-import com.itextpdf.text.pdf.security.MakeSignature;
-import com.itextpdf.text.pdf.security.MakeSignature.CryptoStandard;
-import com.itextpdf.text.pdf.security.PrivateKeySignature;
 import com.zy.security.Coder;
 
 /**
@@ -93,96 +65,7 @@ public abstract class CertificateCoder extends Coder {
 	public static final String SSL_CERT_FOOTER = "-----END CERTIFICATE-----";
 
 	public static void main(String[] args) throws Exception {
-		KeyStore ks = getKeyStore("C:\\ssl\\openssl\\oneCA\\user.p12", KEY_STORE_P12, "user123456");
-		Enumeration<String> aliaesEle = ks.aliases();
-		String ele = "";
-		while (aliaesEle.hasMoreElements()) {
-			ele = aliaesEle.nextElement();
-			System.out.println("alia: " + ele);
-		}
 
-		Certificate[] chain = getCertificateChain("C:\\ssl\\openssl\\oneCA\\user.p12", KEY_STORE_P12, ele, "user123456");
-		System.out.println(chain.length);
-		Certificate signCertificate = getCertificate("C:\\ssl\\openssl\\oneCA\\user.p12", KEY_STORE_P12, ele, "user123456");
-		
-		PrivateKey pk = getPrivateKey("C:\\ssl\\openssl\\oneCA\\user.p12", KEY_STORE_P12, ele, "user123456");
-
-		// PdfReader reader = new PdfReader("C:\\testNo5.pdf"); // 源文件
-		// FileOutputStream fout = new FileOutputStream("C:\\testNo5_1.pdf");
-		// PdfStamper stp = PdfStamper.createSignature(reader, fout, '\0');
-		// int[] permissions;
-		// stp.setEncryption(chain, permissions, ENCRYPTION_AES128);
-		// PdfSignatureAppearance sap = stp.getSignatureAppearance();
-		// sap.setCertificate(signCertificate);
-		// sap.setCertificationLevel(1);
-		// // sap.setCrypto(, chain, null,
-		// // PdfSignatureAppearance.CERTIFIED_FORM_FILLING);
-		// sap.setReason("");
-		// sap.setLocation(""); // 添加位置信息，可为空
-		// sap.setContact("http://swordshadow.iteye.com/");
-		// Image image = Image.getInstance("C:\\sign.png"); // 使用png格式透明图片
-		//
-		// sap.setSignatureGraphic(image);
-		// // sap.setAcro6Layers(true);
-		// sap.setRenderingMode(RenderingMode.GRAPHIC);
-		// sap.setVisibleSignature(new Rectangle(300, 600, 400, 675), 1, null);
-		// // 300和600
-		// // 是对应x轴和y轴坐标
-		// // stp.getWriter().setCompressionLevel(5);
-		//
-		// if (stp != null) {
-		// stp.close();
-		// }
-		// if (fout != null) {
-		// fout.close();
-		// }
-		// if (reader != null) {
-		// reader.close();
-		// }
-
-		BouncyCastleProvider provider = new BouncyCastleProvider();
-		Security.addProvider(provider);
-		String SRC = "C:\\testNo5.pdf";
-		String DEST = "C:\\testNo5_1.pdf";
-		
-		sign(SRC, String.format(DEST, 1), chain, pk, DigestAlgorithms.SHA256, provider.getName(), CryptoStandard.CMS, "Test 1", "Ghent");
-//		sign(SRC, String.format(DEST, 2), chain, pk, DigestAlgorithms.SHA512, provider.getName(), CryptoStandard.CMS, "Test 2", "Ghent");
-//		sign(SRC, String.format(DEST, 3), chain, pk, DigestAlgorithms.SHA256, provider.getName(), CryptoStandard.CADES, "Test 3", "Ghent");
-//		sign(SRC, String.format(DEST, 4), chain, pk, DigestAlgorithms.RIPEMD160, provider.getName(), CryptoStandard.CADES, "Test 4", "Ghent");
-
-	}
-
-	public static void sign(String src, String dest, Certificate[] chain, PrivateKey pk, String digestAlgorithm, String provider, CryptoStandard subfilter, String reason, String location)
-			throws GeneralSecurityException, IOException, DocumentException {
-		// Creating the reader and the stamper
-		PdfReader reader = new PdfReader(src);
-		FileOutputStream os = new FileOutputStream(dest);
-		PdfStamper stamper = PdfStamper.createSignature(reader, os, '\0');
-		
-		
-		PdfFormField field = PdfFormField.createSignature(stamper.getWriter());
-		field.setFieldName("签章");
-		// set the widget properties
-		field.setWidget(new Rectangle(72, 732, 144, 780), PdfAnnotation.HIGHLIGHT_OUTLINE);
-		field.setFlags(PdfAnnotation.FLAGS_PRINT);
-		// add the annotation
-		stamper.addAnnotation(field, 1);
-		
-		
-		// Creating the appearance
-		PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
-//		appearance.setReason(reason);
-//		appearance.setLocation(location);
-		
-		Image image = Image.getInstance("C:\\seal.bmp"); // 使用png格式透明图片
-		appearance.setImage(image);
-		appearance.setVisibleSignature(new Rectangle(36, 748, 144, 780), 1, "签章");
-		
-		
-		// Creating the signature
-		ExternalDigest digest = new BouncyCastleDigest();
-		ExternalSignature signature = new PrivateKeySignature(pk, digestAlgorithm, provider);
-		MakeSignature.signDetached(appearance, digest, signature, chain, null, null, null, 0, subfilter);
 	}
 
 	/**
@@ -416,7 +299,7 @@ public abstract class CertificateCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static PrivateKey getPrivateKey(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
+	public static PrivateKey getPrivateKey(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
 		KeyStore ks = getKeyStore(keyStorePath, keyStoreType, password);
 		PrivateKey key = (PrivateKey) ks.getKey(alias, password.toCharArray());
 		return key;
@@ -429,7 +312,7 @@ public abstract class CertificateCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static PublicKey getPublicKey(String certificatePath) throws Exception {
+	public static PublicKey getPublicKey(String certificatePath) throws Exception {
 		Certificate certificate = getCertificate(certificatePath);
 		PublicKey key = certificate.getPublicKey();
 		return key;
@@ -442,7 +325,7 @@ public abstract class CertificateCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static Certificate getCertificate(String certificatePath) throws Exception {
+	public static Certificate getCertificate(String certificatePath) throws Exception {
 		CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
 		FileInputStream in = new FileInputStream(certificatePath);
 
@@ -461,20 +344,20 @@ public abstract class CertificateCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static Certificate getCertificate(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
+	public static Certificate getCertificate(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
 		KeyStore ks = getKeyStore(keyStorePath, keyStoreType, password);
 		Certificate certificate = ks.getCertificate(alias);
 
 		return certificate;
 	}
 	
-	private static Provider getProvider(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
+	public static Provider getProvider(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
 		KeyStore ks = getKeyStore(keyStorePath, keyStoreType, password);
 
 		return ks.getProvider();
 	}
 
-	private static Certificate[] getCertificateChain(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
+	public static Certificate[] getCertificateChain(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
 		KeyStore ks = getKeyStore(keyStorePath, keyStoreType, password);
 		Certificate[] certificateChain = ks.getCertificateChain(alias);
 
@@ -489,7 +372,7 @@ public abstract class CertificateCoder extends Coder {
 	 * @return
 	 * @throws Exception
 	 */
-	private static KeyStore getKeyStore(String keyStorePath, String keyStoreType, String password) throws Exception {
+	public static KeyStore getKeyStore(String keyStorePath, String keyStoreType, String password) throws Exception {
 		FileInputStream is = new FileInputStream(keyStorePath);
 		KeyStore ks = KeyStore.getInstance(keyStoreType);
 		ks.load(is, password.toCharArray());
