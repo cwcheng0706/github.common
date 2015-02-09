@@ -106,7 +106,7 @@ public class CertificateCoderTest {
 
 		byte[] encrypt = CertificateCoder.encryptByPublicKey(data, certificatePath);
 
-		byte[] decrypt = CertificateCoder.decryptByPrivateKey(encrypt, keyStorePath, alias, password);
+		byte[] decrypt = CertificateCoder.decryptByPrivateKey(encrypt, keyStorePath,CertificateCoder.KEY_STORE_JKS, alias, password);
 		String outputStr = new String(decrypt);
 
 		System.err.println("加密前: " + inputStr + "\n\r" + "解密后: " + outputStr);
@@ -126,7 +126,7 @@ public class CertificateCoderTest {
 		String inputStr = "sign";
 		byte[] data = inputStr.getBytes();
 
-		byte[] encodedData = CertificateCoder.encryptByPrivateKey(data, keyStorePath, alias, password);
+		byte[] encodedData = CertificateCoder.encryptByPrivateKey(data, keyStorePath,CertificateCoder.KEY_STORE_JKS, alias, password);
 
 		byte[] decodedData = CertificateCoder.decryptByPublicKey(encodedData, certificatePath);
 
@@ -136,7 +136,7 @@ public class CertificateCoderTest {
 
 		System.err.println("私钥签名——公钥验证签名");
 		// 产生签名
-		String sign = CertificateCoder.sign(encodedData, keyStorePath, alias, password);
+		String sign = CertificateCoder.sign(encodedData, keyStorePath,CertificateCoder.KEY_STORE_JKS, alias, password);
 		System.err.println("签名:\r" + sign);
 
 		// 验证签名
@@ -154,7 +154,7 @@ public class CertificateCoderTest {
 		conn.setDoInput(true);
 		conn.setDoOutput(true);
 
-		CertificateCoder.configSSLSocketFactory(conn, clientPassword, clientKeyStorePath, clientKeyStorePath);
+		CertificateCoder.configSSLSocketFactory(conn, clientPassword, clientKeyStorePath,CertificateCoder.KEY_STORE_JKS, clientKeyStorePath);
 
 		InputStream is = conn.getInputStream();
 
