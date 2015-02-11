@@ -18,7 +18,11 @@ import com.itextpdf.text.pdf.PdfAnnotation;
 import com.itextpdf.text.pdf.PdfFormField;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
+import com.itextpdf.text.pdf.PdfSignatureAppearance.RenderingMode;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.parser.LocationTextExtractionStrategy;
+import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
+import com.itextpdf.text.pdf.parser.RenderListener;
 import com.itextpdf.text.pdf.security.BouncyCastleDigest;
 import com.itextpdf.text.pdf.security.DigestAlgorithms;
 import com.itextpdf.text.pdf.security.ExternalDigest;
@@ -51,7 +55,7 @@ public class SignPdf {
 		String SRC = "C:\\testNo5.pdf";
 		String DEST = "C:\\testNo5_1.pdf";
 		
-		sign(SRC, String.format(DEST, 1), chain, pk, DigestAlgorithms.SHA256, provider.getName(), CryptoStandard.CMS, "Test 1", "Ghent");
+		sign(SRC, String.format(DEST, 1), chain, pk, DigestAlgorithms.SHA256, provider.getName(), CryptoStandard.CMS, "保险人签章", "保险人签章");
 //		sign(SRC, String.format(DEST, 2), chain, pk, DigestAlgorithms.SHA512, provider.getName(), CryptoStandard.CMS, "Test 2", "Ghent");
 //		sign(SRC, String.format(DEST, 3), chain, pk, DigestAlgorithms.SHA256, provider.getName(), CryptoStandard.CADES, "Test 3", "Ghent");
 //		sign(SRC, String.format(DEST, 4), chain, pk, DigestAlgorithms.RIPEMD160, provider.getName(), CryptoStandard.CADES, "Test 4", "Ghent");
@@ -62,28 +66,38 @@ public class SignPdf {
 			throws GeneralSecurityException, IOException, DocumentException {
 		// Creating the reader and the stamper
 		PdfReader reader = new PdfReader(src);
+		
+		
+		
 		FileOutputStream os = new FileOutputStream(dest);
 		PdfStamper stamper = PdfStamper.createSignature(reader, os, '\0');
 		
 		
-		PdfFormField field = PdfFormField.createSignature(stamper.getWriter());
-		field.setFieldName("签章");
-		// set the widget properties
-		field.setWidget(new Rectangle(72, 732, 144, 780), PdfAnnotation.HIGHLIGHT_OUTLINE);
-		field.setFlags(PdfAnnotation.FLAGS_PRINT);
-		// add the annotation
-		stamper.addAnnotation(field, 1);
+		//预留手动签章证书的地方
+//		PdfFormField field = PdfFormField.createSignature(stamper.getWriter());
+//		field.setFieldName("保险人签章");
+//		// set the widget properties
+//		field.setWidget(new Rectangle(72, 732, 144, 780), PdfAnnotation.HIGHLIGHT_OUTLINE);
+//		field.setFlags(PdfAnnotation.FLAGS_PRINT);
+//		// add the annotation
+//		stamper.addAnnotation(field, 1);
+		
 		
 		
 		// Creating the appearance
 		PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
-//		appearance.setReason(reason);
-//		appearance.setLocation(location);
+		appearance.setReason(reason);
+		appearance.setLocation(location);
 		
 		Image image = Image.getInstance("C:\\seal.bmp"); // 使用png格式透明图片
-		appearance.setImage(image);
-		appearance.setVisibleSignature(new Rectangle(36, 748, 144, 780), 1, "签章");
+//		appearance.setImage(image);
 		
+		//设置签章图片  及签章的模式（图）
+		appearance.setSignatureGraphic(image);
+		appearance.setRenderingMode(RenderingMode.GRAPHIC);
+		
+		appearance.setVisibleSignature(new Rectangle(360, 748, 144, 780), 1, "保险人签章");
+//		appearance.setVisibleSignature("保险人签章");
 		
 		// Creating the signature
 		ExternalDigest digest = new BouncyCastleDigest();
