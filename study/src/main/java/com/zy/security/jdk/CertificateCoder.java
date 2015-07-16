@@ -3,11 +3,15 @@ package com.zy.security.jdk;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Provider;
@@ -32,6 +36,16 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xmlbeans.impl.util.Base64;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 
 import sun.misc.BASE64Decoder;
 import sun.security.pkcs.PKCS8Key;
@@ -63,6 +77,8 @@ public abstract class CertificateCoder extends Coder {
 
 	public static final String SSL_CERT_HEADER = "-----BEGIN CERTIFICATE-----";
 	public static final String SSL_CERT_FOOTER = "-----END CERTIFICATE-----";
+	
+	public static final String CHARSET_UTF_8 = "UTF-8";
 
 	public static void main(String[] args) throws Exception {
 
@@ -77,7 +93,7 @@ public abstract class CertificateCoder extends Coder {
 	 * @param cert
 	 * @return
 	 */
-	public static X509Certificate getX509Certificate(String cert) {
+	public static X509Certificate getX509CertificateFromPem(String cert) {
 		X509Certificate x509Certificate = null;
 		if (null != cert && !"".equals(cert.trim())) {
 			cert = cert.trim();
@@ -85,8 +101,12 @@ public abstract class CertificateCoder extends Coder {
 			cert = replaceBlank(cert);
 			try {
 				// Base64解码
-				BASE64Decoder decoder = new BASE64Decoder();
-				byte[] byteCert = decoder.decodeBuffer(cert);
+//				BASE64Decoder decoder = new BASE64Decoder();
+//				byte[] byteCert = decoder.decodeBuffer(cert);
+				
+				
+				byte[] byteCert = org.bouncycastle.util.encoders.Base64.decode(cert.getBytes(CHARSET_UTF_8));
+				
 				// 转换成二进制流
 				ByteArrayInputStream bain = new ByteArrayInputStream(byteCert);
 				CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
@@ -96,6 +116,22 @@ public abstract class CertificateCoder extends Coder {
 			} catch (Exception e) {
 				logger.error("读取证书异常." + e);
 			}
+		}
+
+		return x509Certificate;
+	}
+
+	public static X509Certificate getX509Certificate(byte[] bytes) {
+		X509Certificate x509Certificate = null;
+		try {
+			// 转换成二进制流
+			ByteArrayInputStream bain = new ByteArrayInputStream(bytes);
+			CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
+			x509Certificate = (X509Certificate) certificateFactory.generateCertificate(bain);
+			String info = x509Certificate.getSubjectDN().getName();
+			logger.debug("证书拥有者:" + info);
+		} catch (Exception e) {
+			logger.error("读取证书异常." + e);
 		}
 
 		return x509Certificate;
@@ -290,6 +326,19 @@ public abstract class CertificateCoder extends Coder {
 		return privateKey;
 	}
 
+	public static PrivateKey getPrivateKey(byte[] privateBytes) {
+		PrivateKey privateKey = null;
+		PKCS8EncodedKeySpec priPKCS8;
+		try {
+			priPKCS8 = new PKCS8EncodedKeySpec(privateBytes);
+			KeyFactory keyf = KeyFactory.getInstance("RSA");
+			privateKey = keyf.generatePrivate(priPKCS8);
+		} catch (Exception e) {
+			logger.error("转换私钥异常." + e);
+		}
+		return privateKey;
+	}
+
 	/**
 	 * 由KeyStore获得私钥
 	 * 
@@ -318,6 +367,46 @@ public abstract class CertificateCoder extends Coder {
 		return key;
 	}
 
+	public static void convetPCKS8ToPem(PrivateKey privateKey, String fileName) throws Exception {
+		JcaPEMWriter privatepemWriter = new JcaPEMWriter(new FileWriter(new File(fileName)));
+		privatepemWriter.writeObject(privateKey);
+	}
+
+	public static String privateKeyToPem(PrivateKey key) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(bos));
+
+		pemWriter.writeObject(key);
+
+		pemWriter.close();
+
+		return new String(bos.toByteArray());
+	}
+
+	public static PrivateKey privateKeyFromPem(String der,String password) throws IOException {
+		StringReader reader = new StringReader(der);
+		PEMParser pemParser = new PEMParser(reader);
+		PrivateKey privateKey = null;
+		try {
+			Object o = pemParser.readObject();
+			if(o instanceof PrivateKeyInfo) {
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey((PrivateKeyInfo)o);
+			}else if(o instanceof PEMKeyPair) {
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getKeyPair((PEMKeyPair) o).getPrivate();
+			}else if(o instanceof PEMEncryptedKeyPair) {
+				PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
+				PrivateKeyInfo privateKeyInfo = ((PEMEncryptedKeyPair)o).decryptKeyPair(decProv).getPrivateKeyInfo();
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(privateKeyInfo);
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}finally {
+			pemParser.close();
+		}
+		return privateKey;
+	}
+
+	
 	/**
 	 * 获得Certificate
 	 * 
@@ -350,7 +439,7 @@ public abstract class CertificateCoder extends Coder {
 
 		return certificate;
 	}
-	
+
 	public static Provider getProvider(String keyStorePath, String keyStoreType, String alias, String password) throws Exception {
 		KeyStore ks = getKeyStore(keyStorePath, keyStoreType, password);
 
