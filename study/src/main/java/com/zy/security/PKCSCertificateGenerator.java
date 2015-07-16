@@ -156,7 +156,7 @@ public class PKCSCertificateGenerator {
 	 * @Company: 
 	 * @Create Time: 2015年7月16日 下午2:57:38
 	 * @param kp
-	 * @param chain
+	 * @param chain [客户证书-中间CA-根CA]
 	 * @param p12Path
 	 * @param p12Password
 	 * @return
