@@ -78,7 +78,7 @@ public class DynamicServlet extends HttpServlet {
 		
 		boolean isRevoked = false;
 		if(null != clientCert) {
-			X509Certificate cert = CertificateCoder.getX509Certificate(clientCert);
+			X509Certificate cert = CertificateCoder.getX509CertificateFromPem(clientCert);
 			X509CRL crl = CertificateCoder.loadX509CRL("http://ssl.jl.com/crl/ca-crl.pem");
 			if(null != crl) {
 				isRevoked = crl.isRevoked(cert);
