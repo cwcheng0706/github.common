@@ -74,6 +74,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
 import org.bouncycastle.pkcs.jcajce.JcePKCS12MacCalculatorBuilder;
 import org.bouncycastle.pkcs.jcajce.JcePKCSPBEOutputEncryptorBuilder;
 
+import com.sun.xml.bind.v2.runtime.output.Pcdata;
 import com.zy.security.jdk.CertificateCoder;
 
 public class ClientCertGenerator {
@@ -379,7 +380,7 @@ public class ClientCertGenerator {
 		X509Certificate rootcaCertificate = CertificateCoder.getX509Certificate(Base64.decodeBase64(rootCerBase64));
 		//解析root CA 私钥
 		String rootcaDer = FileUtils.readFileToString(new File("d:\\rootcakey.pem"), "UTF-8");
-		PrivateKey rootcaPrivateKey = CertificateCoder.privateKeyFromPem(rootcaDer,"");
+		PrivateKey rootcaPrivateKey = PKCSCertificateCoder.getPrivateKeyFromPem(rootcaDer,"");
 		System.out.println(rootcaPrivateKey);
 		
 		//1.生成用户密钥对

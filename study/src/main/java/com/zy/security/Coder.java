@@ -8,11 +8,33 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
+@SuppressWarnings("restriction")
 public abstract class Coder {
 
+	public static final String CHARSET_UTF_8 = "UTF-8";
+	
+	public static final String ALGORITHM_RSA = "RSA";
 	public static final String ALGORITHM_DES = "DES";
 	public static final String ALGORITHM_3DES = "DESSede";
 
+	public static final String PROVIDER_BC = "BC";
+	
+	/**
+	 * Java密钥库
+	 */
+	public static final String KEY_STORE_JKS = "JKS";
+	public static final String KEY_STORE_P12 = "PKCS12";
+
+	public static final String CERTIFICATE_TYPE_X509 = "X.509";
+	public static final String SunX509 = "SunX509";
+	public static final String SSL = "SSL";
+
+	public static final String SSL_CERT_HEADER = "-----BEGIN CERTIFICATE-----";
+	public static final String SSL_CERT_FOOTER = "-----END CERTIFICATE-----";
+	
+	public static final String SSL_REQUEST_HEADER = "-----BEGIN CERTIFICATE REQUEST-----";
+	public static final String SSL_REQUEST_FOOTER = "-----END CERTIFICATE REQUEST-----";
+	
 	static {
 		Security.addProvider(new BouncyCastleProvider());
 

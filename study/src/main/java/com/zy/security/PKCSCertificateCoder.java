@@ -1,7 +1,11 @@
 package com.zy.security;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -9,14 +13,19 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.spec.RSAPublicKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
 import javax.security.auth.x500.X500Principal;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -31,6 +40,15 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMEncryptor;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -40,16 +58,53 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 
 import com.zy.security.jdk.CertificateCoder;
 
-public class PKCSCertificateCoder {
+public class PKCSCertificateCoder extends Coder{
 	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	public static final String signatureAlgorithm_ = "";
 
 	public static void main(String[] args) throws Exception {
-		testGenP12();
+		Security.addProvider(new BouncyCastleProvider());
+		
+//		testGenP12();
+		testGenRootCA();
 	}
 	
-	public static void testGenRootCA() {
+	public static void testGenRootCA() throws Exception {
+		
+		//1.生成密钥对
+		KeyPair keyPair = buildKeyPair();
+		//打印原始私钥
+		String privateStr1 = Base64.encodeBase64String(keyPair.getPrivate().getEncoded());
+		
+		//2.输出私钥pem文件
+		storePrivatePem(new File("d:\\bc\\rootCAkey.pem"),keyPair.getPrivate(), "");
+		//打印读取之前生成的私钥文件
+		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem")), "").getEncoded());
+		
+		//3.生成证书请求
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		
+		//4.生成证书
+		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
+		X509Certificate caCert = buildCARootCertV3(publicKey,keyPair.getPrivate());
+		
+		//5.输出二进制证书文件
+		FileUtils.writeByteArrayToFile(new File("d:\\bc\\rootCA.crt"), caCert.getEncoded());
+		String cacerStr1 = Base64.encodeBase64String(caCert.getEncoded());
+		
+		//6.输出pem证书文件
+		storePrivatePem(new File("d:\\bc\\rootCAcer.pem"), caCert, "");
+		String cacerStr2 = Base64.encodeBase64String(CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAcer.pem"))).getEncoded());
+		
+		
+		
+		
+		//验证转换前后是否正确
+		System.out.println(privateStr1);
+		System.out.println(privateStr2);
+		System.out.println(cacerStr1);
+		System.out.println(cacerStr2);
 		
 	}
 	
@@ -59,7 +114,7 @@ public class PKCSCertificateCoder {
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
 		//解析root CA 私钥
 		String rootcaKey = FileUtils.readFileToString(new File("d:\\rootcakey.pem"), "UTF-8");
-		PrivateKey rootcaPrivateKey = CertificateCoder.privateKeyFromPem(rootcaKey,"");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"");
 		
 		//1.生成用户密钥对
 		Security.addProvider(new BouncyCastleProvider());
@@ -68,12 +123,8 @@ public class PKCSCertificateCoder {
 		KeyPair kp = kpg.genKeyPair();
 
 		//2.生成用户证书请求
-		PKCS10CertificationRequest p10 = genPKCS10(kp);
-		SubjectPublicKeyInfo subPublicKeyInfo = p10.getSubjectPublicKeyInfo();
-		RSAKeyParameters rsa = (RSAKeyParameters) PublicKeyFactory.createKey(subPublicKeyInfo);
-		RSAPublicKeySpec rsaSpec = new RSAPublicKeySpec(rsa.getModulus(), rsa.getExponent());
-		KeyFactory kf = KeyFactory.getInstance("RSA");
-		PublicKey publicKey = kf.generatePublic(rsaSpec);
+		PKCS10CertificationRequest p10 = buildPKCS10(kp);
+		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		
 		//3.生成用户证书
 		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
@@ -83,9 +134,42 @@ public class PKCSCertificateCoder {
 		storeP12(kp, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\client.p12", "123456");
 				
 	}
+	
+	/**
+	 * 生成密钥对
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午3:46:16
+	 * @return
+	 * @throws Exception
+	 */
+	public static KeyPair buildKeyPair() throws Exception {
+		
+		SecureRandom random = new SecureRandom();
+		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+		kpg.initialize(2048,random);
+		KeyPair kp = kpg.genKeyPair();
+		
+		return kp;
+	}
+	
+	/**
+	 * 生成私钥pem格式文件
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午4:03:19
+	 * @param privateKey
+	 * @param password
+	 * @param file
+	 * @throws IOException
+	 */
+	public static void storePrivatePem(File file,Object obj,String password) throws IOException {
+		String pem = writeObjToPem(obj);
+		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
+	}
 
 	/**
-	 * 证书请求
+	 * 生成证书请求
 	 * @Author zy
 	 * @Company: 
 	 * @Create Time: 2015年7月16日 下午2:49:39
@@ -93,7 +177,7 @@ public class PKCSCertificateCoder {
 	 * @return
 	 * @throws Exception
 	 */
-	public static PKCS10CertificationRequest genPKCS10(KeyPair kp) throws Exception{
+	public static PKCS10CertificationRequest buildPKCS10(KeyPair kp) throws Exception{
 		String sigName = "SHA1withRSA";
 		
 		X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
@@ -122,7 +206,33 @@ public class PKCSCertificateCoder {
 	}
 	
 	/**
-	 * Build a sample V3 certificate to use as an end entity certificate
+	 * 从证书请求文件获取公钥
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午4:12:33
+	 * @param p10
+	 * @return
+	 * @throws Exception
+	 */
+	public static PublicKey getPublicKeyFromPKCS10CertificationRequest(PKCS10CertificationRequest p10) throws Exception {
+		SubjectPublicKeyInfo subPublicKeyInfo = p10.getSubjectPublicKeyInfo();
+		RSAKeyParameters rsa = (RSAKeyParameters) PublicKeyFactory.createKey(subPublicKeyInfo);
+		RSAPublicKeySpec rsaSpec = new RSAPublicKeySpec(rsa.getModulus(), rsa.getExponent());
+		KeyFactory kf = KeyFactory.getInstance(ALGORITHM_RSA);
+		PublicKey publicKey = kf.generatePublic(rsaSpec);
+		return publicKey;
+	}
+	
+	/**
+	 * 生成证书
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午3:51:10
+	 * @param entityKey
+	 * @param caKey
+	 * @param caCert
+	 * @return
+	 * @throws Exception
 	 */
 	public static X509Certificate buildEndEntityCert(PublicKey entityKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
 		Calendar c = Calendar.getInstance();
@@ -179,6 +289,30 @@ public class PKCSCertificateCoder {
 		return 0;
 	}
 	
+	
+	/**
+	 * 生成V3 根CA
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午4:55:51
+	 * @param caPublicKey
+	 * @param caPrivateKey
+	 * @return
+	 * @throws Exception
+	 */
+	public static X509Certificate buildCARootCertV3(PublicKey caPublicKey,PrivateKey caPrivateKey) throws Exception {
+		X500Name issuer = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		BigInteger serial = BigInteger.valueOf(1) ;
+		Date notBefore = new Date();
+		Date notAfter = sdf.parse("2017-07-07 07:07:07");
+		X500Name subject = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		PublicKey publicKey = caPublicKey;
+		
+		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, publicKey);
+		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caPrivateKey);
+		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+	}
+	
 	/**
 	 * 生成V3 根CA
 	 * @Author zy
@@ -201,5 +335,63 @@ public class PKCSCertificateCoder {
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
 	}
 	
+	/**
+	 * 把对象写成pem格式文件
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月17日 下午5:06:40
+	 * @param obj  可以是PrivateKey ,X509Certificate ,or PublicKey(一般不用这种情况)
+	 * @return
+	 * @throws IOException
+	 */
+	public static String writeObjToPem(Object obj) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(bos));
+
+		if(obj instanceof PrivateKey) {
+			PrivateKey o = (PrivateKey) obj;
+			JcePEMEncryptorBuilder encryptorBuilder = new JcePEMEncryptorBuilder(ALGORITHM_3DES);
+			encryptorBuilder.setProvider(PROVIDER_BC);
+			PEMEncryptor encryptor = encryptorBuilder.build("123456".toCharArray());
+			byte[] encryBytes = encryptor.encrypt(o.getEncoded());
+			
+			
+			PEMEncryptor penc = (new JcePEMEncryptorBuilder("AES-256-CFB")).build("123456".toCharArray());
+			 
+			pemWriter.writeObject(encryBytes, encryptor);
+		}else if(obj instanceof X509Certificate) {
+			pemWriter.writeObject(obj);
+		}else {
+			pemWriter.writeObject(obj);
+		}
+		
+
+		pemWriter.close();
+
+		return new String(bos.toByteArray());
+	}
+
+	public static PrivateKey getPrivateKeyFromPem(String der,String password) throws IOException {
+		StringReader reader = new StringReader(der);
+		PEMParser pemParser = new PEMParser(reader);
+		PrivateKey privateKey = null;
+		try {
+			Object o = pemParser.readObject();
+			if(o instanceof PrivateKeyInfo) {
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey((PrivateKeyInfo)o);
+			}else if(o instanceof PEMKeyPair) {
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getKeyPair((PEMKeyPair) o).getPrivate();
+			}else if(o instanceof PEMEncryptedKeyPair) {
+				PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
+				PrivateKeyInfo privateKeyInfo = ((PEMEncryptedKeyPair)o).decryptKeyPair(decProv).getPrivateKeyInfo();
+				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(privateKeyInfo);
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}finally {
+			pemParser.close();
+		}
+		return privateKey;
+	}
 	
 }
