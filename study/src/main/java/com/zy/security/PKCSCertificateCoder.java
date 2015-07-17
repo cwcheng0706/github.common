@@ -15,19 +15,13 @@ import java.security.spec.RSAPublicKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
 import javax.security.auth.x500.X500Principal;
-
 import org.apache.commons.io.FileUtils;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.ExtensionsGenerator;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -46,12 +40,20 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 
 import com.zy.security.jdk.CertificateCoder;
 
-public class PKCSCertificateGenerator {
+public class PKCSCertificateCoder {
 	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	public static final String signatureAlgorithm_ = "";
 
 	public static void main(String[] args) throws Exception {
+		testGenP12();
+	}
+	
+	public static void testGenRootCA() {
 		
+	}
+	
+	public static void testGenP12() throws Exception {
 		//解析root CA 证书
 		String rootcaCer = FileUtils.readFileToString(new File("d:\\rootcacer.pem"), "UTF-8");
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
@@ -79,8 +81,7 @@ public class PKCSCertificateGenerator {
 		
 		//4.生成用户p12文件
 		storeP12(kp, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\client.p12", "123456");
-		
-		
+				
 	}
 
 	/**
@@ -100,14 +101,15 @@ public class PKCSCertificateGenerator {
 		x500NameBld.addRDN(BCStyle.ST, "Victoria");
 		x500NameBld.addRDN(BCStyle.L, "Melbourne");
 		x500NameBld.addRDN(BCStyle.O, "The Legion of the Bouncy Castle");
+		x500NameBld.addRDN(BCStyle.CN, "zhuyong");
 		X500Name subject = x500NameBld.build();
 		
 		PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(subject, kp.getPublic());
 		
-		ExtensionsGenerator extGen = new ExtensionsGenerator();
-		extGen.addExtension(Extension.subjectAlternativeName,false, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "feedback-crypto@bouncycastle.org")));
-		
-		requestBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest,extGen.generate());
+//		ExtensionsGenerator extGen = new ExtensionsGenerator();
+//		extGen.addExtension(Extension.subjectAlternativeName,false, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "feedback-crypto@bouncycastle.org")));
+//		
+//		requestBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest,extGen.generate());
 		
 		PKCS10CertificationRequest p10 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider("BC").build(kp.getPrivate()));
 
@@ -138,14 +140,17 @@ public class PKCSCertificateGenerator {
 				BigInteger.valueOf(1), 
 				new Date(System.currentTimeMillis()), 
 				c.getTime(), 
-				new X500Principal("CN=zhuyong,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
+				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
 				entityKey);
 		
+
+        
 		JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 		certBldr.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCert))
 				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(entityKey))
 				.addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
 				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
+		
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
 	}
@@ -173,4 +178,28 @@ public class PKCSCertificateGenerator {
 		}
 		return 0;
 	}
+	
+	/**
+	 * 生成V3 根CA
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月16日 下午3:32:48
+	 * @param keyPair
+	 * @return
+	 * @throws Exception
+	 */
+	public static X509Certificate buildCARootCertV3(KeyPair keyPair) throws Exception {
+		X500Name issuer = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		BigInteger serial = BigInteger.valueOf(1) ;
+		Date notBefore = new Date();
+		Date notAfter = sdf.parse("2017-07-07 07:07:07");
+		X500Name subject = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		PublicKey publicKey = keyPair.getPublic();
+		
+		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, publicKey);
+		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(keyPair.getPrivate());
+		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+	}
+	
+	
 }

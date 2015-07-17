@@ -348,27 +348,6 @@ public class ClientCertGenerator {
 	
 	public static void testGenP12() throws Exception {
 		
-		String rootKeyBase64 =  "MIIDvTCCAqWgAwIBAgIEEioP6zANBgkqhkiG9w0BAQsFADCBjjELMAkGA1UEBhMC" +
-							    "Q04xETAPBgNVBAgTCHNoYW5naGFpMREwDwYDVQQHEwhzaGFuZ2hhaTEzMDEGA1UE" +
-							    "Cgwq5LiK5rW36YeR6bm/6YeR6J6N5L+h5oGv5pyN5Yqh5pyJ6ZmQ5YWs5Y+4MQsw" +
-								"CQYDVQQLEwJJVDEXMBUGA1UEAxMOb3Blbi5qbGZleC5jb20wHhcNMTQwODIxMDM0" +
-								"NTQ5WhcNMjQwODE4MDM0NTQ5WjCBjjELMAkGA1UEBhMCQ04xETAPBgNVBAgTCHNo" +
-								"YW5naGFpMREwDwYDVQQHEwhzaGFuZ2hhaTEzMDEGA1UECgwq5LiK5rW36YeR6bm/" +
-								"6YeR6J6N5L+h5oGv5pyN5Yqh5pyJ6ZmQ5YWs5Y+4MQswCQYDVQQLEwJJVDEXMBUG" +
-								"A1UEAxMOb3Blbi5qbGZleC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK" +
-								"AoIBAQCQ4q4Yh8EPHbAP+BMiystXOEV56OE+IUwxSS7fRZ3ZrIEPImpnCiAe1txZ" +
-								"vk0Lgv8ZWqrj4ErOT5FoOWfQW6Vva1DOXknCzFbypJMjqVnIS1/OwB64sYg4naLc" +
-								"mM95GAHtEv9qxIWLbPhoLShz54znRNbM7mZJyT4BwLhKuKmfdo3UEuXvcoUFLN2l" +
-								"f2wiTNmgMgpxcnCsWAx2nJaonPGCVXeQu0PXCVmCTyUUCWdT7P1io5yEpuRP/Dac" +
-								"//g7Em8rkulgeO7e3gnEbrgrczsr2H1KJLTBjQmyWeWZg7LRYML6oHODrrDb0x++" +
-								"yDT01p2BJHlvw/UzJq3I/CCci0lFAgMBAAGjITAfMB0GA1UdDgQWBBS1Lo57VqvU" +
-								"BnfyJu51JO9csLJenjANBgkqhkiG9w0BAQsFAAOCAQEACcfPaVl5PIkBZ6cXyHuj" +
-								"rJZkZH7Koqhx12DNeCoohdQkRda/gWeHVPsO7snK63sFhoY08OGVgvTRhgzwSBxJ" +
-								"cx9GkCyojfHo5xZoOlSQ01PygyScd42DlseNiwXZGBfoxacLEYkIP6OXrDa+wNAP" +
-								"gHnLI+37tzkafoPT0xoV/E9thvUUKX1jSIL5UCoGuso6FWLiZgDxD8wKgd22FcYo" +
-								"T7B7DHG4R+0rgav81J9xjgOR3ayvNrb86iVvVBmrIiM7Gc2hf5PMiiAOaISST2cJ" +
-								"x90X7TUA/f0qrYKveTvkRT77nLfzHV1a+PTS7PwkCXUt/NRm4VwseyGIgQ4FXH6W" +
-								"zw==";
 		
 		String rootCerBase64 = "MIIDvTCCAqWgAwIBAgIEEioP6zANBgkqhkiG9w0BAQsFADCBjjELMAkGA1UEBhMC" +
 								"Q04xETAPBgNVBAgTCHNoYW5naGFpMREwDwYDVQQHEwhzaGFuZ2hhaTEzMDEGA1UE" +
@@ -393,12 +372,6 @@ public class ClientCertGenerator {
 								"zw==";
 		
 		
-		
-		String temp = new String(Base64.encodeBase64(Base64.decodeBase64(rootKeyBase64)),"UTF-8");
-		System.out.println(rootKeyBase64);
-		System.out.println(temp);
-		
-
 		
 		
 		
