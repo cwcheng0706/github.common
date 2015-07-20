@@ -42,19 +42,25 @@ import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
-import org.bouncycastle.openssl.PEMEncryptor;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.PKCS8Generator;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
-import org.bouncycastle.openssl.jcajce.JcePEMEncryptorBuilder;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.InputDecryptorProvider;
+import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.bouncycastle.util.io.pem.PemObject;
 
 import com.zy.security.jdk.CertificateCoder;
 
@@ -65,6 +71,7 @@ public class PKCSCertificateCoder extends Coder{
 
 	public static void main(String[] args) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
+		
 		
 //		testGenP12();
 		testGenRootCA();
@@ -78,9 +85,9 @@ public class PKCSCertificateCoder extends Coder{
 		String privateStr1 = Base64.encodeBase64String(keyPair.getPrivate().getEncoded());
 		
 		//2.输出私钥pem文件
-		storePrivatePem(new File("d:\\bc\\rootCAkey.pem"),keyPair.getPrivate(), "");
+		storePrivatePem(new File("d:\\bc\\rootCAkey.pem"),keyPair.getPrivate(), "123456");
 		//打印读取之前生成的私钥文件
-		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem")), "").getEncoded());
+		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem")), "123456").getEncoded());
 		
 		//3.生成证书请求
 		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
@@ -114,7 +121,7 @@ public class PKCSCertificateCoder extends Coder{
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
 		//解析root CA 私钥
 		String rootcaKey = FileUtils.readFileToString(new File("d:\\rootcakey.pem"), "UTF-8");
-		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
 		
 		//1.生成用户密钥对
 		Security.addProvider(new BouncyCastleProvider());
@@ -146,7 +153,7 @@ public class PKCSCertificateCoder extends Coder{
 	public static KeyPair buildKeyPair() throws Exception {
 		
 		SecureRandom random = new SecureRandom();
-		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+		KeyPairGenerator kpg = KeyPairGenerator.getInstance(ALGORITHM_RSA, PROVIDER_BC);
 		kpg.initialize(2048,random);
 		KeyPair kp = kpg.genKeyPair();
 		
@@ -154,7 +161,7 @@ public class PKCSCertificateCoder extends Coder{
 	}
 	
 	/**
-	 * 生成私钥pem格式文件
+	 * 生成私钥pem格式文件,如果是写证书则不需要填写密码
 	 * @Author zy
 	 * @Company: 
 	 * @Create Time: 2015年7月17日 下午4:03:19
@@ -163,8 +170,8 @@ public class PKCSCertificateCoder extends Coder{
 	 * @param file
 	 * @throws IOException
 	 */
-	public static void storePrivatePem(File file,Object obj,String password) throws IOException {
-		String pem = writeObjToPem(obj);
+	public static void storePrivatePem(File file,Object obj,String password) throws Exception {
+		String pem = writeObjToPem(obj,password);
 		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
 	}
 
@@ -344,21 +351,21 @@ public class PKCSCertificateCoder extends Coder{
 	 * @return
 	 * @throws IOException
 	 */
-	public static String writeObjToPem(Object obj) throws IOException {
+	public static String writeObjToPem(Object obj,String password) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		JcaPEMWriter pemWriter = new JcaPEMWriter(new OutputStreamWriter(bos));
 
 		if(obj instanceof PrivateKey) {
-			PrivateKey o = (PrivateKey) obj;
-			JcePEMEncryptorBuilder encryptorBuilder = new JcePEMEncryptorBuilder(ALGORITHM_3DES);
-			encryptorBuilder.setProvider(PROVIDER_BC);
-			PEMEncryptor encryptor = encryptorBuilder.build("123456".toCharArray());
-			byte[] encryBytes = encryptor.encrypt(o.getEncoded());
-			
-			
-			PEMEncryptor penc = (new JcePEMEncryptorBuilder("AES-256-CFB")).build("123456".toCharArray());
-			 
-			pemWriter.writeObject(encryBytes, encryptor);
+			if(null!= password && !"".equals(password.trim())) {
+				JceOpenSSLPKCS8EncryptorBuilder encryptorBuilder = new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.PBE_SHA1_3DES);
+			    encryptorBuilder.setRandom(new SecureRandom());
+			    encryptorBuilder.setPasssword(password.toCharArray());
+			    OutputEncryptor oe = encryptorBuilder.build();
+			    JcaPKCS8Generator gen = new JcaPKCS8Generator((PrivateKey)obj,oe);
+			    PemObject pemObject = gen.generate();
+			    obj = pemObject;
+		    }
+		    pemWriter.writeObject(obj);
 		}else if(obj instanceof X509Certificate) {
 			pemWriter.writeObject(obj);
 		}else {
@@ -371,23 +378,31 @@ public class PKCSCertificateCoder extends Coder{
 		return new String(bos.toByteArray());
 	}
 
-	public static PrivateKey getPrivateKeyFromPem(String der,String password) throws IOException {
+	public static PrivateKey getPrivateKeyFromPem(String der,String password) throws Exception {
 		StringReader reader = new StringReader(der);
 		PEMParser pemParser = new PEMParser(reader);
 		PrivateKey privateKey = null;
 		try {
 			Object o = pemParser.readObject();
 			if(o instanceof PrivateKeyInfo) {
-				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey((PrivateKeyInfo)o);
+				privateKey = new JcaPEMKeyConverter().setProvider(PROVIDER_BC).getPrivateKey((PrivateKeyInfo)o);
 			}else if(o instanceof PEMKeyPair) {
-				privateKey = new JcaPEMKeyConverter().setProvider("BC").getKeyPair((PEMKeyPair) o).getPrivate();
+				privateKey = new JcaPEMKeyConverter().setProvider(PROVIDER_BC).getKeyPair((PEMKeyPair) o).getPrivate();
 			}else if(o instanceof PEMEncryptedKeyPair) {
 				PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().build(password.toCharArray());
 				PrivateKeyInfo privateKeyInfo = ((PEMEncryptedKeyPair)o).decryptKeyPair(decProv).getPrivateKeyInfo();
-				privateKey = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey(privateKeyInfo);
+				
+				privateKey = new JcaPEMKeyConverter().setProvider(PROVIDER_BC).getPrivateKey(privateKeyInfo);
+			}else if(o instanceof PKCS8EncryptedPrivateKeyInfo) {
+				PKCS8EncryptedPrivateKeyInfo pkcs8EncryptedPrivateKeyInfo = (PKCS8EncryptedPrivateKeyInfo)o;
+				JceOpenSSLPKCS8DecryptorProviderBuilder jce = new JceOpenSSLPKCS8DecryptorProviderBuilder();
+                InputDecryptorProvider decProv = jce.build(password.toCharArray());
+                PrivateKeyInfo privateKeyInfo = pkcs8EncryptedPrivateKeyInfo.decryptPrivateKeyInfo(decProv);
+                
+                privateKey = new JcaPEMKeyConverter().setProvider(PROVIDER_BC).getPrivateKey(privateKeyInfo);
+			}else {
+				throw new RuntimeException("没用找到数据类型[" + o.getClass() + "]");
 			}
-		} catch(Exception e){
-			e.printStackTrace();
 		}finally {
 			pemParser.close();
 		}
