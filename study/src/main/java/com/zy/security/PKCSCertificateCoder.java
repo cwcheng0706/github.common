@@ -77,6 +77,13 @@ public class PKCSCertificateCoder extends Coder{
 		testGenRootCA();
 	}
 	
+	/**
+	 * 测试生成CA 并生成相应的pem文件
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月20日 下午2:22:35
+	 * @throws Exception
+	 */
 	public static void testGenRootCA() throws Exception {
 		
 		//1.生成密钥对
@@ -161,7 +168,7 @@ public class PKCSCertificateCoder extends Coder{
 	}
 	
 	/**
-	 * 生成私钥pem格式文件,如果是写证书则不需要填写密码
+	 * 生成私钥pem格式文件
 	 * @Author zy
 	 * @Company: 
 	 * @Create Time: 2015年7月17日 下午4:03:19
@@ -343,7 +350,7 @@ public class PKCSCertificateCoder extends Coder{
 	}
 	
 	/**
-	 * 把对象写成pem格式文件
+	 * 把对象写成pem格式文件,写证书时不用填写password
 	 * @Author zy
 	 * @Company: 
 	 * @Create Time: 2015年7月17日 下午5:06:40
