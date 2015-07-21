@@ -74,8 +74,13 @@ public class PKCSCertificateCoder extends Coder{
 		
 //		testGenP12ForAtlantis();
 		
-//		testGenRootCA();
-		testGenP12();
+		
+		
+//		testGenRootCA("client");
+		testGenClient("client");
+		
+//		testGenRootCA("server");
+//		testGenServer("server");
 	}
 	
 	/**
@@ -85,7 +90,7 @@ public class PKCSCertificateCoder extends Coder{
 	 * @Create Time: 2015年7月20日 下午2:22:35
 	 * @throws Exception
 	 */
-	public static void testGenRootCA() throws Exception {
+	public static void testGenRootCA(String alias) throws Exception {
 		
 		//1.生成密钥对
 		KeyPair keyPair = buildKeyPair();
@@ -93,9 +98,9 @@ public class PKCSCertificateCoder extends Coder{
 		String privateStr1 = Base64.encodeBase64String(keyPair.getPrivate().getEncoded());
 		
 		//2.输出私钥pem文件
-		storePrivatePem(new File("d:\\bc\\rootCAkey.pem"),keyPair.getPrivate(), "123456");
+		storePrivatePem(new File("d:\\bc\\" + alias + "RootCAkey.pem"),keyPair.getPrivate(), "123456");
 		//打印读取之前生成的私钥文件
-		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem")), "123456").getEncoded());
+		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\" + alias + "RootCAkey.pem")), "123456").getEncoded());
 		
 		//3.生成证书请求
 		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
@@ -112,12 +117,12 @@ public class PKCSCertificateCoder extends Coder{
 //		System.out.println();
 		
 		//5.输出证书二进制文件
-		FileUtils.writeByteArrayToFile(new File("d:\\bc\\rootCA.crt"), caCert.getEncoded());
+		FileUtils.writeByteArrayToFile(new File("d:\\bc\\" + alias + "RootCA.crt"), caCert.getEncoded());
 		String cacerStr1 = Base64.encodeBase64String(caCert.getEncoded());
 		
 		//6.输出证书pem文件
-		storeCertificatePem(new File("d:\\bc\\rootCAcer.pem"), caCert);
-		String cacerStr2 = Base64.encodeBase64String(CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAcer.pem"))).getEncoded());
+		storeCertificatePem(new File("d:\\bc\\" + alias + "RootCAcer.pem"), caCert);
+		String cacerStr2 = Base64.encodeBase64String(CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\" + alias + "RootCAcer.pem"))).getEncoded());
 		
 		
 		
@@ -130,12 +135,12 @@ public class PKCSCertificateCoder extends Coder{
 		
 	}
 	
-	public static void testGenP12() throws Exception {
+	public static void testGenClient(String rootAlias) throws Exception {
 		//解析root CA 证书
-		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\rootCAcer.pem"), "UTF-8");
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
 		//解析root CA 私钥
-		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem"), "UTF-8");
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
 		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
 		
 		//1.生成用户密钥对
@@ -151,11 +156,44 @@ public class PKCSCertificateCoder extends Coder{
 		//4.生成用户证书 二进制文件和pem文件
 		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
 		FileUtils.writeByteArrayToFile(new File("d:\\bc\\client.cer"), clientCertificate.getEncoded());
-		storePrivatePem(new File("d:\\bc\\clientkey.pem"), keyPair.getPrivate(), "123456");
+		storeCertificatePem(new File("d:\\bc\\clientcer.pem"), clientCertificate);
 		
 		//5.生成用户p12文件
 		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\bc\\client.p12", "123456");
 				
+	}
+	
+	/**
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月21日 下午3:58:42
+	 * @throws Exception
+	 */
+	public static void testGenServer(String rootAlias) throws Exception {
+		//解析root CA 证书
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
+		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
+		//解析root CA 私钥
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
+		
+		//1.生成用户密钥对
+		KeyPair keyPair = buildKeyPair();
+		
+		//2.输出私钥文件
+		storePrivatePem(new File("d:\\bc\\serverkey.pem"),keyPair.getPrivate(), "123456");
+
+		//3.生成用户证书请求
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
+		
+		//4.生成用户证书 二进制文件和pem文件
+		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
+		FileUtils.writeByteArrayToFile(new File("d:\\bc\\server.cer"), clientCertificate.getEncoded());
+		storeCertificatePem(new File("d:\\bc\\servercer.pem"), clientCertificate);
+		
+		//5.生成用户p12文件
+		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\bc\\server.p12", "123456");
 	}
 	
 	public static void testGenP12ForAtlantis() throws Exception {
@@ -293,13 +331,13 @@ public class PKCSCertificateCoder extends Coder{
 	 * @Author zy
 	 * @Company: 
 	 * @Create Time: 2015年7月17日 下午3:51:10
-	 * @param entityKey
+	 * @param publicKey
 	 * @param caKey
 	 * @param caCert
 	 * @return
 	 * @throws Exception
 	 */
-	public static X509Certificate buildEndEntityCert(PublicKey entityKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
+	public static X509Certificate buildEndEntityCert(PublicKey publicKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.YEAR, 10);
 		
@@ -316,16 +354,35 @@ public class PKCSCertificateCoder extends Coder{
 				new Date(System.currentTimeMillis()), 
 				c.getTime(), 
 				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
-				entityKey);
+				publicKey);
 		
 
         
 		JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 		certBldr.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCert))
-				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(entityKey))
+				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey))
 				.addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
 				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
 		
+		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
+		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+	}
+	
+	public static X509Certificate buildIntermediateCert(PublicKey publicKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.YEAR, 10);
+		
+		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(caCert.getSubjectX500Principal(),
+				BigInteger.valueOf(System.currentTimeMillis()), 
+				new Date(System.currentTimeMillis()), 
+				c.getTime(), 
+				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
+				publicKey);
+		
+		JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+		certBldr.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCert))
+				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey)).addExtension(Extension.basicConstraints, true, new BasicConstraints(0))
+				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
 	}
