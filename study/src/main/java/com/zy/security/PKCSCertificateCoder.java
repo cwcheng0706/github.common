@@ -282,13 +282,14 @@ public class PKCSCertificateCoder extends Coder{
 	 */
 	public static PKCS10CertificationRequest buildPKCS10(KeyPair kp) throws Exception{
 		String sigName = "SHA1withRSA";
-		
+		//CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN
 		X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
-		x500NameBld.addRDN(BCStyle.C, "AU");
-		x500NameBld.addRDN(BCStyle.ST, "Victoria");
-		x500NameBld.addRDN(BCStyle.L, "Melbourne");
-		x500NameBld.addRDN(BCStyle.O, "The Legion of the Bouncy Castle");
-		x500NameBld.addRDN(BCStyle.CN, "zhuyong");
+		x500NameBld.addRDN(BCStyle.C, "CN");
+		x500NameBld.addRDN(BCStyle.ST, "SH");
+		x500NameBld.addRDN(BCStyle.L, "SH_L");
+		x500NameBld.addRDN(BCStyle.O, "JL");
+		x500NameBld.addRDN(BCStyle.OU, "JL");
+		x500NameBld.addRDN(BCStyle.CN, "zhuyong001");
 		X500Name subject = x500NameBld.build();
 		
 		PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(subject, kp.getPublic());
@@ -361,13 +362,28 @@ public class PKCSCertificateCoder extends Coder{
 		JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 		certBldr.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCert))
 				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey))
-				.addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
-				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
+				//.addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
+				//.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment))
+				//改成false证书里面就不会用感叹号了
+				.addExtension(Extension.basicConstraints, false, new BasicConstraints(false))
+				.addExtension(Extension.keyUsage, false, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment))
+				;
 		
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
 	}
 	
+	/**
+	 * 生成中间证书 带有CA功能
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月21日 下午5:26:22
+	 * @param publicKey
+	 * @param caKey
+	 * @param caCert
+	 * @return
+	 * @throws Exception
+	 */
 	public static X509Certificate buildIntermediateCert(PublicKey publicKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.YEAR, 10);
@@ -381,7 +397,8 @@ public class PKCSCertificateCoder extends Coder{
 		
 		JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 		certBldr.addExtension(Extension.authorityKeyIdentifier, false, extUtils.createAuthorityKeyIdentifier(caCert))
-				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey)).addExtension(Extension.basicConstraints, true, new BasicConstraints(0))
+				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey))
+				.addExtension(Extension.basicConstraints, true, new BasicConstraints(0))
 				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
