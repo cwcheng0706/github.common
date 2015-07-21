@@ -72,9 +72,10 @@ public class PKCSCertificateCoder extends Coder{
 	public static void main(String[] args) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
 		
+//		testGenP12ForAtlantis();
 		
-//		testGenP12();
-		testGenRootCA();
+//		testGenRootCA();
+		testGenP12();
 	}
 	
 	/**
@@ -102,13 +103,20 @@ public class PKCSCertificateCoder extends Coder{
 		//4.生成证书
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		X509Certificate caCert = buildCARootCertV3(publicKey,keyPair.getPrivate());
+//		System.out.println();
+//		System.out.println(Base64.encodeBase64String(publicKey.getEncoded()));
+//		System.out.println(Base64.encodeBase64String(caCert.getPublicKey().getEncoded()));
+//		PublicKey p1 = CertificateCoder.getPublicKey(publicKey.getEncoded());
+//		System.out.println(Base64.encodeBase64String(p1.getEncoded()));
+//		System.out.println(Base64.encodeBase64String(caCert.getEncoded()));
+//		System.out.println();
 		
-		//5.输出二进制证书文件
+		//5.输出证书二进制文件
 		FileUtils.writeByteArrayToFile(new File("d:\\bc\\rootCA.crt"), caCert.getEncoded());
 		String cacerStr1 = Base64.encodeBase64String(caCert.getEncoded());
 		
-		//6.输出pem证书文件
-		storePrivatePem(new File("d:\\bc\\rootCAcer.pem"), caCert, "");
+		//6.输出证书pem文件
+		storeCertificatePem(new File("d:\\bc\\rootCAcer.pem"), caCert);
 		String cacerStr2 = Base64.encodeBase64String(CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\rootCAcer.pem"))).getEncoded());
 		
 		
@@ -124,6 +132,34 @@ public class PKCSCertificateCoder extends Coder{
 	
 	public static void testGenP12() throws Exception {
 		//解析root CA 证书
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\rootCAcer.pem"), "UTF-8");
+		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
+		//解析root CA 私钥
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\rootCAkey.pem"), "UTF-8");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
+		
+		//1.生成用户密钥对
+		KeyPair keyPair = buildKeyPair();
+		
+		//2.输出私钥文件
+		storePrivatePem(new File("d:\\bc\\clientkey.pem"),keyPair.getPrivate(), "123456");
+
+		//3.生成用户证书请求
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
+		
+		//4.生成用户证书 二进制文件和pem文件
+		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
+		FileUtils.writeByteArrayToFile(new File("d:\\bc\\client.cer"), clientCertificate.getEncoded());
+		storePrivatePem(new File("d:\\bc\\clientkey.pem"), keyPair.getPrivate(), "123456");
+		
+		//5.生成用户p12文件
+		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\bc\\client.p12", "123456");
+				
+	}
+	
+	public static void testGenP12ForAtlantis() throws Exception {
+		//解析root CA 证书
 		String rootcaCer = FileUtils.readFileToString(new File("d:\\rootcacer.pem"), "UTF-8");
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
 		//解析root CA 私钥
@@ -131,21 +167,22 @@ public class PKCSCertificateCoder extends Coder{
 		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
 		
 		//1.生成用户密钥对
-		Security.addProvider(new BouncyCastleProvider());
-		KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
-		kpg.initialize(2048);
-		KeyPair kp = kpg.genKeyPair();
+		KeyPair keyPair = buildKeyPair();
+		
+		//2.输出私钥文件
+		storePrivatePem(new File("d:\\clientkey.pem"),keyPair.getPrivate(), "123456");
 
-		//2.生成用户证书请求
-		PKCS10CertificationRequest p10 = buildPKCS10(kp);
+		//3.生成用户证书请求
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		
-		//3.生成用户证书
+		//4.生成用户证书 二进制文件和pem文件
 		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
 		FileUtils.writeByteArrayToFile(new File("d:\\client.cer"), clientCertificate.getEncoded());
+		storePrivatePem(new File("d:\\clientkey.pem"), keyPair.getPrivate(), "123456");
 		
-		//4.生成用户p12文件
-		storeP12(kp, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\client.p12", "123456");
+		//5.生成用户p12文件
+		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\client.p12", "123456");
 				
 	}
 	
@@ -171,14 +208,28 @@ public class PKCSCertificateCoder extends Coder{
 	 * 生成私钥pem格式文件
 	 * @Author zy
 	 * @Company: 
-	 * @Create Time: 2015年7月17日 下午4:03:19
-	 * @param privateKey
-	 * @param password
+	 * @Create Time: 2015年7月21日 上午11:15:45
 	 * @param file
-	 * @throws IOException
+	 * @param privateKey  PrivateKey
+	 * @param password
+	 * @throws Exception
 	 */
-	public static void storePrivatePem(File file,Object obj,String password) throws Exception {
-		String pem = writeObjToPem(obj,password);
+	public static void storePrivatePem(File file,PrivateKey privateKey,String password) throws Exception {
+		String pem = writeObjToPem(privateKey,password);
+		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
+	}
+	
+	/**
+	 * 将证书写入pem文件
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月21日 上午10:52:03
+	 * @param file
+	 * @param x509Certificate
+	 * @throws Exception
+	 */
+	public static void storeCertificatePem(File file,X509Certificate x509Certificate) throws Exception {
+		String pem = writeObjToPem(x509Certificate,null);
 		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
 	}
 
@@ -261,7 +312,7 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(caCert.getSubjectX500Principal(),
-				BigInteger.valueOf(1), 
+				BigInteger.valueOf(System.currentTimeMillis()), 
 				new Date(System.currentTimeMillis()), 
 				c.getTime(), 
 				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
@@ -315,11 +366,11 @@ public class PKCSCertificateCoder extends Coder{
 	 * @throws Exception
 	 */
 	public static X509Certificate buildCARootCertV3(PublicKey caPublicKey,PrivateKey caPrivateKey) throws Exception {
-		X500Name issuer = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		X500Name issuer = new X500Name("CN=CA ZY Root Certificate Test,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
 		BigInteger serial = BigInteger.valueOf(1) ;
 		Date notBefore = new Date();
 		Date notAfter = sdf.parse("2017-07-07 07:07:07");
-		X500Name subject = new X500Name("CN=Test Root Certificate,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
+		X500Name subject = new X500Name("CN=CA ZY Root Certificate Test,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN");
 		PublicKey publicKey = caPublicKey;
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, publicKey);

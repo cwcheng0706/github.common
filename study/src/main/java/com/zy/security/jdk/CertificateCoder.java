@@ -19,6 +19,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -308,12 +309,18 @@ public abstract class CertificateCoder extends Coder {
 		PKCS8EncodedKeySpec priPKCS8;
 		try {
 			priPKCS8 = new PKCS8EncodedKeySpec(privateBytes);
-			KeyFactory keyf = KeyFactory.getInstance("RSA");
+			KeyFactory keyf = KeyFactory.getInstance(ALGORITHM_RSA);
 			privateKey = keyf.generatePrivate(priPKCS8);
 		} catch (Exception e) {
 			logger.error("转换私钥异常." + e);
 		}
 		return privateKey;
+	}
+	
+	public static PublicKey getPublicKey(byte[] publicKeyBytes) throws Exception {
+		X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+		KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_RSA);
+		return keyFactory.generatePublic(x509EncodedKeySpec);
 	}
 
 	/**
