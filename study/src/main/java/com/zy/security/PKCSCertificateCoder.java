@@ -15,6 +15,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.security.spec.RSAPublicKeySpec;
 import java.text.SimpleDateFormat;
@@ -25,18 +26,37 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.Req;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -52,10 +72,12 @@ import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.InputDecryptorProvider;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
@@ -78,18 +100,31 @@ public class PKCSCertificateCoder extends Coder{
 		
 //		testGenRootCA("client");
 		testGenClient("client");
+//		testGenCRL("client");
 		
 //		testGenRootCA("server");
 //		testGenServer("server");
+		
+		
+//		testGenRootCA("ocsp");
+		testCreateOCSP("ocsp");
 	}
 	
-	/**
-	 * 测试生成CA 并生成相应的pem文件
-	 * @Author zy
-	 * @Company: 
-	 * @Create Time: 2015年7月20日 下午2:22:35
-	 * @throws Exception
-	 */
+	public static void testCreateOCSP(String rootAlias) throws Exception {
+		//解析root CA 证书
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
+		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
+		//解析root CA 私钥
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
+		
+		
+		X509Certificate certificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\clientcer.pem")));
+		X509Certificate issuerCertificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\clientRootCAcer.pem")));
+		OCSPResp resp = createOcspResp(certificate, true, issuerCertificate, rootcaCertificate, rootcaPrivateKey, Long.valueOf("2"));
+		System.out.println(resp.getStatus());
+	}
+
 	public static void testGenRootCA(String alias) throws Exception {
 		
 		//1.生成密钥对
@@ -160,15 +195,24 @@ public class PKCSCertificateCoder extends Coder{
 		
 		//5.生成用户p12文件
 		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\bc\\client.p12", "123456");
-				
+		
 	}
 	
-	/**
-	 * @Author zy
-	 * @Company: 
-	 * @Create Time: 2015年7月21日 下午3:58:42
-	 * @throws Exception
-	 */
+	public static void testGenCRL(String rootAlias) throws Exception {
+		//解析root CA 证书
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
+		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
+		//解析root CA 私钥
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
+		
+		//生成CRL
+		X509CRL crl = generateCrl(rootcaCertificate,rootcaPrivateKey);
+		FileUtils.writeByteArrayToFile(new File("d:\\bc\\crl.cer"), crl.getEncoded());
+		
+		storeX509CRLPem(new File("d:\\bc\\crl.pem"),crl);
+	}
+	
 	public static void testGenServer(String rootAlias) throws Exception {
 		//解析root CA 证书
 		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
@@ -270,6 +314,20 @@ public class PKCSCertificateCoder extends Coder{
 		String pem = writeObjToPem(x509Certificate,null);
 		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
 	}
+	
+	/**
+	 * 将吊销文件写入pem文件
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月22日 下午2:33:26
+	 * @param file
+	 * @param x509crl
+	 * @throws Exception
+	 */
+	public static void storeX509CRLPem(File file,X509CRL x509crl) throws Exception {
+		String pem = writeObjToPem(x509crl, null);
+		FileUtils.writeStringToFile(file, pem,CHARSET_UTF_8);
+	}
 
 	/**
 	 * 生成证书请求
@@ -351,7 +409,7 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(caCert.getSubjectX500Principal(),
-				BigInteger.valueOf(System.currentTimeMillis()), 
+				BigInteger.valueOf(2), 
 				new Date(System.currentTimeMillis()), 
 				c.getTime(), 
 				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
@@ -539,6 +597,82 @@ public class PKCSCertificateCoder extends Coder{
 			pemParser.close();
 		}
 		return privateKey;
+	}
+	
+	/**
+	 * 生成吊销列表
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月22日 下午3:00:25
+	 * @param issuerCertificate
+	 * @param issuerPrivateKey
+	 * @return
+	 * @throws Exception
+	 */
+	public static X509CRL generateCrl(X509Certificate issuerCertificate, PrivateKey issuerPrivateKey) throws Exception {
+		Calendar c = Calendar.getInstance();
+		c.add(Calendar.YEAR, 10);
+		
+		X509CertificateHolder holder = new X509CertificateHolder(issuerCertificate.getEncoded());
+        X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(holder.getIssuer(), new Date());
+        crlBuilder.setNextUpdate(new Date(new Date().getTime() + 100000));
+        JcaContentSignerBuilder contentBuilder = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC");
+
+        CRLNumber crlNumber = new CRLNumber(new BigInteger("1234"));
+       
+        crlBuilder.addExtension(Extension.cRLNumber, false, crlNumber);
+        X509CRLHolder x509Crl = crlBuilder.build(contentBuilder.build(issuerPrivateKey));
+        return new JcaX509CRLConverter().setProvider("BC").getCRL(x509Crl);
+	}
+	
+	public static OCSPResp createOcspResp(X509Certificate certificate, boolean revoked, X509Certificate issuerCertificate, X509Certificate ocspResponderCertificate,
+			PrivateKey ocspResponderPrivateKey, long nonceTimeinMillis) throws Exception {
+		DigestCalculator digestCalc = new JcaDigestCalculatorProviderBuilder().setProvider("BC").build().get(CertificateID.HASH_SHA1);
+		X509CertificateHolder issuerHolder = new X509CertificateHolder(issuerCertificate.getEncoded());
+		CertificateID certId = new CertificateID(digestCalc, issuerHolder, certificate.getSerialNumber());
+
+		// request
+		// create a nonce to avoid replay attack
+		BigInteger nonce = BigInteger.valueOf(nonceTimeinMillis);
+		DEROctetString nonceDer = new DEROctetString(nonce.toByteArray());
+		Extension ext = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, true, nonceDer);
+		Extensions exts = new Extensions(ext);
+
+		OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
+		ocspReqBuilder.addRequest(certId);
+		ocspReqBuilder.setRequestExtensions(exts);
+		OCSPReq ocspReq = ocspReqBuilder.build();
+
+		SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo(CertificateID.HASH_SHA1, ocspResponderCertificate.getPublicKey().getEncoded());
+
+		BasicOCSPRespBuilder basicOCSPRespBuilder = new BasicOCSPRespBuilder(keyInfo, digestCalc);
+		basicOCSPRespBuilder.setResponseExtensions(exts);
+
+		// request processing
+		Req[] requestList = ocspReq.getRequestList();
+		for (Req ocspRequest : requestList) {
+			CertificateID certificateID = ocspRequest.getCertID();
+			CertificateStatus certificateStatus = CertificateStatus.GOOD;
+			if (revoked) {
+				certificateStatus = new RevokedStatus(new Date(), CRLReason.privilegeWithdrawn);
+			}
+			basicOCSPRespBuilder.addResponse(certificateID, certificateStatus);
+		}
+
+		// basic response generation
+		X509CertificateHolder[] chain = null;
+		if (!ocspResponderCertificate.equals(issuerCertificate)) {
+			// TODO: HorribleProxy can't convert array input params yet
+			chain = new X509CertificateHolder[] { new X509CertificateHolder(ocspResponderCertificate.getEncoded()), issuerHolder };
+		}
+
+		ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(ocspResponderPrivateKey);
+		BasicOCSPResp basicOCSPResp = basicOCSPRespBuilder.build(contentSigner, chain, new Date(nonceTimeinMillis));
+
+		OCSPRespBuilder ocspRespBuilder = new OCSPRespBuilder();
+		OCSPResp ocspResp = ocspRespBuilder.build(OCSPRespBuilder.SUCCESSFUL, basicOCSPResp);
+
+		return ocspResp;
 	}
 	
 }
