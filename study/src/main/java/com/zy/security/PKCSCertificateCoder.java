@@ -59,6 +59,7 @@ import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.jce.PrincipalUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
@@ -100,14 +101,33 @@ public class PKCSCertificateCoder extends Coder{
 		
 //		testGenRootCA("client");
 		testGenClient("client");
-//		testGenCRL("client");
+		testGenCRL("client");
 		
 //		testGenRootCA("server");
 //		testGenServer("server");
 		
 		
 //		testGenRootCA("ocsp");
-		testCreateOCSP("ocsp");
+//		testCreateOCSP("ocsp");
+		
+		
+	}
+	
+	public static void testGenCRL(String rootAlias) throws Exception {
+		//解析root CA   证书 --可能专门生成一个CRL CA级别的根证书
+		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
+		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
+		//解析root CA 私钥
+		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
+		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
+		
+		//生成CRL
+//		X509CRL crl = generateCrl(rootcaCertificate,rootcaPrivateKey);
+//		FileUtils.writeByteArrayToFile(new File("d:\\bc\\crl.crl"), crl.getEncoded());
+//		storeX509CRLPem(new File("d:\\bc\\crl.pem"),crl);
+		
+		X509Certificate cert = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\clientcer.pem")));
+		revoke(cert , new File("d:\\bc\\crl.crl"), rootcaPrivateKey);
 	}
 	
 	public static void testCreateOCSP(String rootAlias) throws Exception {
@@ -196,21 +216,6 @@ public class PKCSCertificateCoder extends Coder{
 		//5.生成用户p12文件
 		storeP12(keyPair, new X509Certificate[]{clientCertificate,rootcaCertificate},"d:\\bc\\client.p12", "123456");
 		
-	}
-	
-	public static void testGenCRL(String rootAlias) throws Exception {
-		//解析root CA 证书
-		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
-		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
-		//解析root CA 私钥
-		String rootcaKey = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAkey.pem"), "UTF-8");
-		PrivateKey rootcaPrivateKey = getPrivateKeyFromPem(rootcaKey,"123456");
-		
-		//生成CRL
-		X509CRL crl = generateCrl(rootcaCertificate,rootcaPrivateKey);
-		FileUtils.writeByteArrayToFile(new File("d:\\bc\\crl.cer"), crl.getEncoded());
-		
-		storeX509CRLPem(new File("d:\\bc\\crl.pem"),crl);
 	}
 	
 	public static void testGenServer(String rootAlias) throws Exception {
@@ -409,7 +414,7 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(caCert.getSubjectX500Principal(),
-				BigInteger.valueOf(2), 
+				BigInteger.valueOf(System.currentTimeMillis()), 
 				new Date(System.currentTimeMillis()), 
 				c.getTime(), 
 				new X500Principal("CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN"), 
@@ -618,11 +623,59 @@ public class PKCSCertificateCoder extends Coder{
         crlBuilder.setNextUpdate(new Date(new Date().getTime() + 100000));
         JcaContentSignerBuilder contentBuilder = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC");
 
-        CRLNumber crlNumber = new CRLNumber(new BigInteger("1234"));
+        CRLNumber crlNumber = new CRLNumber(new BigInteger("2"));
        
         crlBuilder.addExtension(Extension.cRLNumber, false, crlNumber);
         X509CRLHolder x509Crl = crlBuilder.build(contentBuilder.build(issuerPrivateKey));
         return new JcaX509CRLConverter().setProvider("BC").getCRL(x509Crl);
+	}
+	
+	public static boolean revoke(X509Certificate cert, File caRevocationList, PrivateKey caPrivateKey) {
+		try {
+			X500Name issuerDN = new X500Name(PrincipalUtil.getIssuerX509Principal(cert).getName());
+			X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(issuerDN, new Date());
+			if (caRevocationList.exists()) {
+				byte[] data = FileUtils.readFileToByteArray(caRevocationList);
+				X509CRLHolder crl = new X509CRLHolder(data);
+				crlBuilder.addCRL(crl);
+			}
+
+			crlBuilder.addCRLEntry(cert.getSerialNumber(), new Date(), CRLReason.privilegeWithdrawn);//这里可以填其它原因
+//			Extension extension = new Extension(extnId, critical, value);
+//			Extensions extensions = new Extensions(extension);
+//			crlBuilder.addCRLEntry(cert.getSerialNumber(), new Date(), extensions);
+
+			// build and sign CRL with CA private key
+			ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA").setProvider(PROVIDER_BC).build(caPrivateKey);
+			X509CRLHolder crl = crlBuilder.build(signer);
+
+			File tmpFile = new File(caRevocationList.getParentFile(), Long.toHexString(System.currentTimeMillis()) + ".tmp");
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(tmpFile);
+				fos.write(crl.getEncoded());
+				fos.flush();
+				fos.close();
+				if (caRevocationList.exists()) {
+					caRevocationList.delete();
+				}
+				tmpFile.renameTo(caRevocationList);
+
+			} finally {
+				if (fos != null) {
+					fos.close();
+				}
+				if (tmpFile.exists()) {
+					tmpFile.delete();
+				}
+			}
+
+//			x509log.log(MessageFormat.format("Revoked certificate {0,number,0} reason: {1} [{2}]", cert.getSerialNumber(), reason.toString(), cert.getSubjectDN().getName()));
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static OCSPResp createOcspResp(X509Certificate certificate, boolean revoked, X509Certificate issuerCertificate, X509Certificate ocspResponderCertificate,
@@ -675,4 +728,16 @@ public class PKCSCertificateCoder extends Coder{
 		return ocspResp;
 	}
 	
+	
+	public static enum RevocationReason {
+		// https://en.wikipedia.org/wiki/Revocation_list
+		unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, unused, removeFromCRL, privilegeWithdrawn, ACompromise;
+
+		public static RevocationReason[] reasons = { unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, privilegeWithdrawn };
+
+		@Override
+		public String toString() {
+			return name() + " (" + ordinal() + ")";
+		}
+	}
 }
