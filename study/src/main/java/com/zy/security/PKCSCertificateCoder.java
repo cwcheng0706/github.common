@@ -72,6 +72,7 @@ import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
+import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -141,7 +142,8 @@ public class PKCSCertificateCoder extends Coder{
 		X509Certificate certificate = CertificateCoder.getX509Certificate(new File("d:\\bc\\test.cer"));
 		String postURL = "http://EVSecure-ocsp.verisign.com";
 		OCSPResp resp = sendOCSPRequestPOST(postURL, certificate);
-		System.out.println(resp);
+		
+		printOcspResponseStatus(resp);
 		
 	}
 	
@@ -177,6 +179,10 @@ public class PKCSCertificateCoder extends Coder{
 		System.out.println(resp.getStatus());
 		
 		
+		printOcspResponseStatus(resp);
+	}
+
+	public static void printOcspResponseStatus(OCSPResp resp) throws OCSPException {
 		/** 判断OCSPResponse 是否注销 **/
 		BasicOCSPResp basicResponse = (BasicOCSPResp) resp.getResponseObject();
         SingleResp[] responses = (basicResponse==null) ? null : basicResponse.getResponses();
@@ -880,7 +886,11 @@ public class PKCSCertificateCoder extends Coder{
 			con.setUseCaches(false);
 			con.setDoOutput(true);
 			con.setDoInput(true);
-			con.setRequestProperty("Content-Type", "application/octet-stream");
+//			con.setRequestProperty("Content-Type", "application/octet-stream");
+			
+			con.setRequestProperty("Content-Type", "application/ocsp-request");
+	        con.setRequestProperty("Accept", "application/ocsp-response");
+			
 			OutputStream os = con.getOutputStream();
 			os.write(certBase64.getBytes());
 			os.close();
@@ -895,8 +905,8 @@ public class PKCSCertificateCoder extends Coder{
 //				ocspResp = new OCSPResp(bresp);
 			
 			byte[] bytes = IOUtils.toByteArray(con.getInputStream());
-			System.out.println(new String(bytes));
-			bytes = Base64.encodeBase64(bytes);
+//			System.out.println(new String(bytes));
+//			bytes = Base64.encodeBase64(bytes);
 			if (bytes.length == 0)
 				ocspResp = new OCSPResp(new OCSPResponse(null,null));
 			else
