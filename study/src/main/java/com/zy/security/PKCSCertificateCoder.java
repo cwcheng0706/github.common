@@ -1,12 +1,19 @@
 package com.zy.security;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -26,18 +33,32 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.ocsp.OCSPResponse;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.asn1.x509.CertificatePolicies;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -57,6 +78,8 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jce.PrincipalUtil;
@@ -100,8 +123,8 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 //		testGenRootCA("client");
-		testGenClient("client");
-		testGenCRL("client");
+//		testGenClient("client");
+//		testGenCRL("client");
 		
 //		testGenRootCA("server");
 //		testGenServer("server");
@@ -109,7 +132,16 @@ public class PKCSCertificateCoder extends Coder{
 		
 //		testGenRootCA("ocsp");
 //		testCreateOCSP("ocsp");
+		testGetOcsp();
 		
+	}
+	
+	public static void testGetOcsp() throws Exception {
+		
+		X509Certificate certificate = CertificateCoder.getX509Certificate(new File("d:\\bc\\test.cer"));
+		String postURL = "http://EVSecure-ocsp.verisign.com";
+		OCSPResp resp = sendOCSPRequestPOST(postURL, certificate);
+		System.out.println(resp);
 		
 	}
 	
@@ -141,8 +173,25 @@ public class PKCSCertificateCoder extends Coder{
 		
 		X509Certificate certificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\clientcer.pem")));
 		X509Certificate issuerCertificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\clientRootCAcer.pem")));
-		OCSPResp resp = createOcspResp(certificate, true, issuerCertificate, rootcaCertificate, rootcaPrivateKey, Long.valueOf("2"));
+		OCSPResp resp = createOcspResp(certificate, false, issuerCertificate, rootcaCertificate, rootcaPrivateKey, Long.valueOf("2"));
 		System.out.println(resp.getStatus());
+		
+		
+		/** 判断OCSPResponse 是否注销 **/
+		BasicOCSPResp basicResponse = (BasicOCSPResp) resp.getResponseObject();
+        SingleResp[] responses = (basicResponse==null) ? null : basicResponse.getResponses();
+
+        if (responses!=null && responses.length == 1) {
+            SingleResp singleResp = responses[0];
+            CertificateStatus status = singleResp.getCertStatus();
+            if (status == CertificateStatus.GOOD) {
+                System.out.println("OCSP Status is good!");
+            } else if (status instanceof RevokedStatus) {
+                System.out.println("OCSP Status is revoked!");
+            }  else if (status instanceof UnknownStatus) {
+                System.out.println("OCSP Status is unknown!");
+            }
+        }
 	}
 
 	public static void testGenRootCA(String alias) throws Exception {
@@ -432,6 +481,42 @@ public class PKCSCertificateCoder extends Coder{
 				.addExtension(Extension.keyUsage, false, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment))
 				;
 		
+		
+		
+		//Certificate Policies
+		PolicyInformation[] certPolicies = new PolicyInformation[2];
+		certPolicies[0] = new PolicyInformation(new ASN1ObjectIdentifier("2.16.840.1.101.2.1.11.5"));
+		certPolicies[1] = new PolicyInformation(new ASN1ObjectIdentifier("2.16.840.1.101.2.1.11.18"));
+		certBldr.addExtension(Extension.certificatePolicies, false, new CertificatePolicies(certPolicies));
+		
+		
+		
+		//Authority Information Access
+		AccessDescription caIssuers = new AccessDescription(AccessDescription.id_ad_caIssuers,new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String("http://www.somewebsite.com/ca.cer")));
+		AccessDescription ocsp = new AccessDescription(AccessDescription.id_ad_ocsp, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String("http://ocsp.somewebsite.com")));
+
+		ASN1EncodableVector aia_ASN = new ASN1EncodableVector();
+		aia_ASN.add(caIssuers);
+		aia_ASN.add(ocsp);
+
+		certBldr.addExtension(Extension.authorityInfoAccess, false, new DERSequence(aia_ASN));
+		
+		
+		
+		//CRL Distribution Points
+		DistributionPointName distPointOne = new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier,"http://crl.somewebsite.com/master.crl")));
+		DistributionPointName distPointTwo = new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier,"ldap://crl.somewebsite.com/second.crl")));
+
+		DistributionPoint[] distPoints = new DistributionPoint[2];
+		distPoints[0] = new DistributionPoint(distPointOne, null, null);
+		distPoints[1] = new DistributionPoint(distPointTwo, null, null);
+
+		certBldr.addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distPoints));
+		
+	
+		
+		
+		
 		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
 		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
 	}
@@ -708,6 +793,8 @@ public class PKCSCertificateCoder extends Coder{
 			CertificateStatus certificateStatus = CertificateStatus.GOOD;
 			if (revoked) {
 				certificateStatus = new RevokedStatus(new Date(), CRLReason.privilegeWithdrawn);
+			}else {
+				
 			}
 			basicOCSPRespBuilder.addResponse(certificateID, certificateStatus);
 		}
@@ -729,15 +816,95 @@ public class PKCSCertificateCoder extends Coder{
 	}
 	
 	
-	public static enum RevocationReason {
-		// https://en.wikipedia.org/wiki/Revocation_list
-		unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, unused, removeFromCRL, privilegeWithdrawn, ACompromise;
+//	public static enum RevocationReason {
+//		// https://en.wikipedia.org/wiki/Revocation_list
+//		unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, certificateHold, unused, removeFromCRL, privilegeWithdrawn, ACompromise;
+//
+//		public static RevocationReason[] reasons = { unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, privilegeWithdrawn };
+//
+//		@Override
+//		public String toString() {
+//			return name() + " (" + ordinal() + ")";
+//		}
+//	}
+	
+	/**
+	 * 向URL地址发OCSP查询请求
+	 * @Author zy
+	 * @Company: 
+	 * @Create Time: 2015年7月23日 上午10:44:39
+	 * @param serviceUrl
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public static OCSPResp getOCSPResponce(String serviceUrl, OCSPReq request) throws Exception {
 
-		public static RevocationReason[] reasons = { unspecified, keyCompromise, caCompromise, affiliationChanged, superseded, cessationOfOperation, privilegeWithdrawn };
+	    try {
+	        byte[] array = request.getEncoded();
+	        if (serviceUrl.startsWith("http")) {
+	            HttpURLConnection con;
+	            URL url = new URL(serviceUrl);
+	            con = (HttpURLConnection) url.openConnection();
+	            con.setRequestProperty("Content-Type", "application/ocsp-request");
+	            con.setRequestProperty("Accept", "application/ocsp-response");
+	            con.setDoOutput(true);
+	            OutputStream out = con.getOutputStream();
+	            DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(out));
+	            dataOut.write(array);
 
-		@Override
-		public String toString() {
-			return name() + " (" + ordinal() + ")";
+	            dataOut.flush();
+	            dataOut.close();
+
+	            //Get Response
+	            InputStream in = (InputStream) con.getContent();
+	            OCSPResp ocspResponse = new OCSPResp(in);
+	            return ocspResponse;
+	        } else {
+	            throw new RuntimeException("Only http is supported for ocsp calls");
+	        }
+	    } catch (IOException e) {
+	        throw new RuntimeException("Cannot get ocspResponse from url: "+ serviceUrl, e);
+	    }
+	}
+	
+	public static OCSPResp sendOCSPRequestPOST(String postURL, X509Certificate certificate) throws Exception {
+		OCSPResp ocspResp = null;
+		try {
+			String certBase64 = Base64.encodeBase64String(certificate.getEncoded());
+			URL url = new URL(postURL);
+			URLConnection con = url.openConnection();
+			con.setReadTimeout(10000);
+			con.setConnectTimeout(10000);
+			con.setAllowUserInteraction(false);
+			con.setUseCaches(false);
+			con.setDoOutput(true);
+			con.setDoInput(true);
+			con.setRequestProperty("Content-Type", "application/octet-stream");
+			OutputStream os = con.getOutputStream();
+			os.write(certBase64.getBytes());
+			os.close();
+			
+			
+			
+//			byte[] resp64 = StreamUtils.inputStreamToByteArray(con.getInputStream());
+//			byte[] bresp = Base64.decode(resp64);
+//			if (bresp.length == 0)
+//				ocspResp = new OCSPResp(new OCSPResponse(null));
+//			else
+//				ocspResp = new OCSPResp(bresp);
+			
+			byte[] bytes = IOUtils.toByteArray(con.getInputStream());
+			System.out.println(new String(bytes));
+			bytes = Base64.encodeBase64(bytes);
+			if (bytes.length == 0)
+				ocspResp = new OCSPResp(new OCSPResponse(null,null));
+			else
+				ocspResp = new OCSPResp(bytes);
+			
+		} catch (Exception cee) {
+			throw new RuntimeException("Can not send OCSP request. Certificate encoding is not valid", cee);
 		}
+		return ocspResp;
 	}
 }
