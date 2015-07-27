@@ -18,6 +18,7 @@ public abstract class Coder {
 	public static final String ALGORITHM_3DES = "DESSede";
 
 	public static final String PROVIDER_BC = "BC";
+	public static final String SIGNATUREALGORITHM_SHA1WITHRSA = "SHA1withRSA";
 	
 	/**
 	 * Java密钥库

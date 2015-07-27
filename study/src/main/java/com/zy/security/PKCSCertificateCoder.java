@@ -114,7 +114,6 @@ import com.zy.security.jdk.CertificateCoder;
 public class PKCSCertificateCoder extends Coder{
 	
 	public static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-	public static final String signatureAlgorithm_ = "";
 
 	public static void main(String[] args) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
@@ -399,7 +398,7 @@ public class PKCSCertificateCoder extends Coder{
 	 * @throws Exception
 	 */
 	public static PKCS10CertificationRequest buildPKCS10(KeyPair kp) throws Exception{
-		String sigName = "SHA1withRSA";
+		String sigName = SIGNATUREALGORITHM_SHA1WITHRSA;
 		//CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN
 		X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
 		x500NameBld.addRDN(BCStyle.C, "CN");
@@ -417,9 +416,9 @@ public class PKCSCertificateCoder extends Coder{
 //		
 //		requestBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest,extGen.generate());
 		
-		PKCS10CertificationRequest p10 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider("BC").build(kp.getPrivate()));
+		PKCS10CertificationRequest p10 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider(PROVIDER_BC).build(kp.getPrivate()));
 
-		if (!p10.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider("BC").build(kp.getPublic()))) {
+		if (!p10.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(PROVIDER_BC).build(kp.getPublic()))) {
 			System.out.println(sigName + ": Failed verify check.");
 		} else {
 			System.out.println(sigName + ": PKCS#10 request verified.");
@@ -523,8 +522,8 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 		
-		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
-		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+		ContentSigner signer = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(caKey);
+		return new JcaX509CertificateConverter().setProvider(PROVIDER_BC).getCertificate(certBldr.build(signer));
 	}
 	
 	/**
@@ -554,8 +553,8 @@ public class PKCSCertificateCoder extends Coder{
 				.addExtension(Extension.subjectKeyIdentifier, false, extUtils.createSubjectKeyIdentifier(publicKey))
 				.addExtension(Extension.basicConstraints, true, new BasicConstraints(0))
 				.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign));
-		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKey);
-		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+		ContentSigner signer = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(caKey);
+		return new JcaX509CertificateConverter().setProvider(PROVIDER_BC).getCertificate(certBldr.build(signer));
 	}
 	
 	/**
@@ -571,7 +570,7 @@ public class PKCSCertificateCoder extends Coder{
 	 */
 	public static int storeP12(KeyPair kp,X509Certificate[] chain,String p12Path, String p12Password ) {
 		try {
-			KeyStore ks = KeyStore.getInstance("PKCS12", "BC");
+			KeyStore ks = KeyStore.getInstance("PKCS12", PROVIDER_BC);
 			ks.load(null, null);
 			ks.setKeyEntry("zhuyong",kp.getPrivate(), p12Password.toCharArray(), chain);
 			FileOutputStream fOut = new FileOutputStream(p12Path);
@@ -602,8 +601,8 @@ public class PKCSCertificateCoder extends Coder{
 		PublicKey publicKey = caPublicKey;
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, publicKey);
-		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caPrivateKey);
-		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+		ContentSigner signer = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(caPrivateKey);
+		return new JcaX509CertificateConverter().setProvider(PROVIDER_BC).getCertificate(certBldr.build(signer));
 	}
 	
 	/**
@@ -624,8 +623,8 @@ public class PKCSCertificateCoder extends Coder{
 		PublicKey publicKey = keyPair.getPublic();
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, publicKey);
-		ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(keyPair.getPrivate());
-		return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBldr.build(signer));
+		ContentSigner signer = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(keyPair.getPrivate());
+		return new JcaX509CertificateConverter().setProvider(PROVIDER_BC).getCertificate(certBldr.build(signer));
 	}
 	
 	/**
@@ -712,13 +711,13 @@ public class PKCSCertificateCoder extends Coder{
 		X509CertificateHolder holder = new X509CertificateHolder(issuerCertificate.getEncoded());
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(holder.getIssuer(), new Date());
         crlBuilder.setNextUpdate(new Date(new Date().getTime() + 100000));
-        JcaContentSignerBuilder contentBuilder = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC");
+        JcaContentSignerBuilder contentBuilder = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC);
 
         CRLNumber crlNumber = new CRLNumber(new BigInteger("2"));
        
         crlBuilder.addExtension(Extension.cRLNumber, false, crlNumber);
         X509CRLHolder x509Crl = crlBuilder.build(contentBuilder.build(issuerPrivateKey));
-        return new JcaX509CRLConverter().setProvider("BC").getCRL(x509Crl);
+        return new JcaX509CRLConverter().setProvider(PROVIDER_BC).getCRL(x509Crl);
 	}
 	
 	public static boolean revoke(X509Certificate cert, File caRevocationList, PrivateKey caPrivateKey) {
@@ -737,7 +736,7 @@ public class PKCSCertificateCoder extends Coder{
 //			crlBuilder.addCRLEntry(cert.getSerialNumber(), new Date(), extensions);
 
 			// build and sign CRL with CA private key
-			ContentSigner signer = new JcaContentSignerBuilder("SHA1WithRSA").setProvider(PROVIDER_BC).build(caPrivateKey);
+			ContentSigner signer = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(caPrivateKey);
 			X509CRLHolder crl = crlBuilder.build(signer);
 
 			File tmpFile = new File(caRevocationList.getParentFile(), Long.toHexString(System.currentTimeMillis()) + ".tmp");
@@ -771,7 +770,7 @@ public class PKCSCertificateCoder extends Coder{
 	
 	public static OCSPResp createOcspResp(X509Certificate certificate, boolean revoked, X509Certificate issuerCertificate, X509Certificate ocspResponderCertificate,
 			PrivateKey ocspResponderPrivateKey, long nonceTimeinMillis) throws Exception {
-		DigestCalculator digestCalc = new JcaDigestCalculatorProviderBuilder().setProvider("BC").build().get(CertificateID.HASH_SHA1);
+		DigestCalculator digestCalc = new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER_BC).build().get(CertificateID.HASH_SHA1);
 		X509CertificateHolder issuerHolder = new X509CertificateHolder(issuerCertificate.getEncoded());
 		CertificateID certId = new CertificateID(digestCalc, issuerHolder, certificate.getSerialNumber());
 
@@ -812,7 +811,7 @@ public class PKCSCertificateCoder extends Coder{
 			chain = new X509CertificateHolder[] { new X509CertificateHolder(ocspResponderCertificate.getEncoded()), issuerHolder };
 		}
 
-		ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(ocspResponderPrivateKey);
+		ContentSigner contentSigner = new JcaContentSignerBuilder(SIGNATUREALGORITHM_SHA1WITHRSA).setProvider(PROVIDER_BC).build(ocspResponderPrivateKey);
 		BasicOCSPResp basicOCSPResp = basicOCSPRespBuilder.build(contentSigner, chain, new Date(nonceTimeinMillis));
 
 		OCSPRespBuilder ocspRespBuilder = new OCSPRespBuilder();
