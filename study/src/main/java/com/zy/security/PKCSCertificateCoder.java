@@ -39,6 +39,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPResponse;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -109,7 +110,12 @@ import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 
+import com.itextpdf.text.error_messages.MessageLocalization;
+import com.itextpdf.text.pdf.PdfEncryption;
+import com.itextpdf.text.pdf.security.CertificateUtil;
 import com.zy.security.jdk.CertificateCoder;
+
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 
 public class PKCSCertificateCoder extends Coder{
 	
@@ -117,6 +123,8 @@ public class PKCSCertificateCoder extends Coder{
 
 	public static void main(String[] args) throws Exception {
 		Security.addProvider(new BouncyCastleProvider());
+		
+//		genX500Name();
 		
 //		testGenP12ForAtlantis();
 		
@@ -132,14 +140,21 @@ public class PKCSCertificateCoder extends Coder{
 		
 //		testGenRootCA("ocsp");
 //		testCreateOCSP("ocsp");
-		testGetOcsp();
+//		testGetOcsp();
+		
+		
+		//client 测试ocsp
+//		byte[] bytes = getEncoded(CertificateCoder.getX509Certificate(new File("d:\\bc\\client.cer")), CertificateCoder.getX509Certificate(new File("d:\\bc\\clientRootCA.crt")), null);
+		
+		byte[] bytes1 = getEncoded(CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baidu.cer")), CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baiduroot.cer")), null);
+		
 		
 	}
 	
 	public static void testGetOcsp() throws Exception {
 		
-		X509Certificate certificate = CertificateCoder.getX509Certificate(new File("d:\\bc\\test.cer"));
-		String postURL = "http://EVSecure-ocsp.verisign.com";
+		X509Certificate certificate = CertificateCoder.getX509Certificate(new File("d:\\bc\\baidu.cer"));
+		String postURL = "http://ocsp.verisign.com";
 		OCSPResp resp = sendOCSPRequestPOST(postURL, certificate);
 		
 		printOcspResponseStatus(resp);
@@ -163,7 +178,7 @@ public class PKCSCertificateCoder extends Coder{
 		revoke(cert , new File("d:\\bc\\crl.crl"), rootcaPrivateKey);
 	}
 	
-	public static void testCreateOCSP(String rootAlias) throws Exception {
+	public static OCSPResp testCreateOCSP(String rootAlias) throws Exception {
 		//解析root CA 证书
 		String rootcaCer = FileUtils.readFileToString(new File("d:\\bc\\" + rootAlias + "RootCAcer.pem"), "UTF-8");
 		X509Certificate rootcaCertificate = CertificateCoder.getX509CertificateFromPem(rootcaCer);
@@ -179,6 +194,8 @@ public class PKCSCertificateCoder extends Coder{
 		
 		
 		printOcspResponseStatus(resp);
+		
+		return resp;
 	}
 
 	public static void printOcspResponseStatus(OCSPResp resp) throws OCSPException {
@@ -212,7 +229,7 @@ public class PKCSCertificateCoder extends Coder{
 		String privateStr2 = Base64.encodeBase64String(getPrivateKeyFromPem(FileUtils.readFileToString(new File("d:\\bc\\" + alias + "RootCAkey.pem")), "123456").getEncoded());
 		
 		//3.生成证书请求
-		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair,genX500Name(alias +" ROOT CA"));
 		
 		//4.生成证书
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
@@ -259,11 +276,11 @@ public class PKCSCertificateCoder extends Coder{
 		storePrivatePem(new File("d:\\bc\\clientkey.pem"),keyPair.getPrivate(), "123456");
 
 		//3.生成用户证书请求
-		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair,genX500Name("zhuyong001"));
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		
 		//4.生成用户证书 二进制文件和pem文件
-		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
+		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate,genX500Name("zhuyong001"));
 		FileUtils.writeByteArrayToFile(new File("d:\\bc\\client.cer"), clientCertificate.getEncoded());
 		storeCertificatePem(new File("d:\\bc\\clientcer.pem"), clientCertificate);
 		
@@ -287,11 +304,11 @@ public class PKCSCertificateCoder extends Coder{
 		storePrivatePem(new File("d:\\bc\\serverkey.pem"),keyPair.getPrivate(), "123456");
 
 		//3.生成用户证书请求
-		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair,genX500Name("ssl.com.cn"));
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		
 		//4.生成用户证书 二进制文件和pem文件
-		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
+		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate,genX500Name("ssl.com.cn"));
 		FileUtils.writeByteArrayToFile(new File("d:\\bc\\server.cer"), clientCertificate.getEncoded());
 		storeCertificatePem(new File("d:\\bc\\servercer.pem"), clientCertificate);
 		
@@ -314,11 +331,11 @@ public class PKCSCertificateCoder extends Coder{
 		storePrivatePem(new File("d:\\clientkey.pem"),keyPair.getPrivate(), "123456");
 
 		//3.生成用户证书请求
-		PKCS10CertificationRequest p10 = buildPKCS10(keyPair);
+		PKCS10CertificationRequest p10 = buildPKCS10(keyPair,genX500Name("zhuyong001"));
 		PublicKey publicKey = getPublicKeyFromPKCS10CertificationRequest(p10);
 		
 		//4.生成用户证书 二进制文件和pem文件
-		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate);
+		X509Certificate clientCertificate = buildEndEntityCert(publicKey,rootcaPrivateKey,rootcaCertificate,genX500Name("zhuyong001"));
 		FileUtils.writeByteArrayToFile(new File("d:\\client.cer"), clientCertificate.getEncoded());
 		storePrivatePem(new File("d:\\clientkey.pem"), keyPair.getPrivate(), "123456");
 		
@@ -397,17 +414,9 @@ public class PKCSCertificateCoder extends Coder{
 	 * @return
 	 * @throws Exception
 	 */
-	public static PKCS10CertificationRequest buildPKCS10(KeyPair kp) throws Exception{
+	public static PKCS10CertificationRequest buildPKCS10(KeyPair kp,X500Name subject) throws Exception{
 		String sigName = SIGNATUREALGORITHM_SHA1WITHRSA;
 		//CN=zhuyong001,OU=JL,O=JL Corporation,L=SH_L,ST=SH,C=CN
-		X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
-		x500NameBld.addRDN(BCStyle.C, "CN");
-		x500NameBld.addRDN(BCStyle.ST, "SH");
-		x500NameBld.addRDN(BCStyle.L, "SH_L");
-		x500NameBld.addRDN(BCStyle.O, "JL");
-		x500NameBld.addRDN(BCStyle.OU, "JL");
-		x500NameBld.addRDN(BCStyle.CN, "zhuyong001");
-		X500Name subject = x500NameBld.build();
 		
 		PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(subject, kp.getPublic());
 		
@@ -425,6 +434,7 @@ public class PKCSCertificateCoder extends Coder{
 		}
 		return p10;
 	}
+
 	
 	/**
 	 * 从证书请求文件获取公钥
@@ -455,7 +465,7 @@ public class PKCSCertificateCoder extends Coder{
 	 * @return
 	 * @throws Exception
 	 */
-	public static X509Certificate buildEndEntityCert(PublicKey publicKey, PrivateKey caKey, X509Certificate caCert) throws Exception {
+	public static X509Certificate buildEndEntityCert(PublicKey publicKey, PrivateKey caKey, X509Certificate caCert,X500Name subject) throws Exception {
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.YEAR, 10);
 		
@@ -465,6 +475,7 @@ public class PKCSCertificateCoder extends Coder{
 //		x500NameBld.addRDN(BCStyle.L, "Melbourne");
 //		x500NameBld.addRDN(BCStyle.O, "The Legion of the Bouncy Castle");
 //		X500Name subject = x500NameBld.build();
+		
 		
 		
 		X509v3CertificateBuilder certBldr = new JcaX509v3CertificateBuilder(caCert.getSubjectX500Principal(),
@@ -498,7 +509,7 @@ public class PKCSCertificateCoder extends Coder{
 		
 		//Authority Information Access
 		AccessDescription caIssuers = new AccessDescription(AccessDescription.id_ad_caIssuers,new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String("http://www.somewebsite.com/ca.cer")));
-		AccessDescription ocsp = new AccessDescription(AccessDescription.id_ad_ocsp, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String("http://ocsp.somewebsite.com")));
+		AccessDescription ocsp = new AccessDescription(AccessDescription.id_ad_ocsp, new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String("http://172.16.3.11/study/ocsp")));
 
 		ASN1EncodableVector aia_ASN = new ASN1EncodableVector();
 		aia_ASN.add(caIssuers);
@@ -662,6 +673,19 @@ public class PKCSCertificateCoder extends Coder{
 
 		return new String(bos.toByteArray());
 	}
+	
+	public static X500Name genX500Name(String cn) {
+		X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
+		x500NameBld.addRDN(BCStyle.C, "CN");
+		x500NameBld.addRDN(BCStyle.ST, "SH");
+		x500NameBld.addRDN(BCStyle.L, "SH_L");
+		x500NameBld.addRDN(BCStyle.O, "JL");
+		x500NameBld.addRDN(BCStyle.OU, "JL");
+		x500NameBld.addRDN(BCStyle.CN, cn);
+		X500Name subject = x500NameBld.build();
+		System.out.println(subject.toString());
+		return subject;
+	}
 
 	public static PrivateKey getPrivateKeyFromPem(String der,String password) throws Exception {
 		StringReader reader = new StringReader(der);
@@ -820,6 +844,105 @@ public class PKCSCertificateCoder extends Coder{
 		return ocspResp;
 	}
 	
+	public static OCSPReq generateOCSPRequest(X509Certificate issuerCert, BigInteger serialNumber) throws Exception {
+
+		// Generate the id for the certificate we are looking for
+		CertificateID id = new CertificateID(new JcaDigestCalculatorProviderBuilder().build().get(CertificateID.HASH_SHA1), new JcaX509CertificateHolder(issuerCert), serialNumber);
+
+		// basic request generation with nonce
+		OCSPReqBuilder gen = new OCSPReqBuilder();
+
+		gen.addRequest(id);
+
+		Extension ext = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new DEROctetString(PdfEncryption.createDocumentId()).getEncoded()));
+		gen.setRequestExtensions(new Extensions(new Extension[] { ext }));
+
+		return gen.build();
+	}
+	
+	public static OCSPResp getOcspResponse(X509Certificate checkCert, X509Certificate rootCert, String url) throws Exception {
+		if (checkCert == null || rootCert == null)
+			return null;
+		if (url == null) {
+			url = CertificateUtil.getOCSPURL(checkCert);
+		}
+		if (url == null)
+			return null;
+		System.out.println("Getting OCSP from " + url);
+		OCSPReq request = generateOCSPRequest(rootCert, checkCert.getSerialNumber());
+		byte[] array = request.getEncoded();
+		URL urlt = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) urlt.openConnection();
+		con.setRequestProperty("Content-Type", "application/ocsp-request");
+		con.setRequestProperty("Accept", "application/ocsp-response");
+		con.setDoOutput(true);
+		OutputStream out = con.getOutputStream();
+		DataOutputStream dataOut = new DataOutputStream(new BufferedOutputStream(out));
+		dataOut.write(array);
+		dataOut.flush();
+		dataOut.close();
+		if (con.getResponseCode() / 100 != 2) {
+			throw new IOException(MessageLocalization.getComposedMessage("invalid.http.response.1", con.getResponseCode()));
+		}
+		// Get Response
+		InputStream in = (InputStream) con.getContent();
+//		return new OCSPResp(RandomAccessFileOrArray.InputStreamToArray(in));
+		
+		return new OCSPResp(IOUtils.toByteArray(in));
+	}
+	
+	public static BasicOCSPResp getBasicOCSPResp(X509Certificate checkCert, X509Certificate rootCert, String url) {
+		try {
+			OCSPResp ocspResponse = getOcspResponse(checkCert, rootCert, url);
+			if (ocspResponse == null)
+				return null;
+			if (ocspResponse.getStatus() != 0)
+				return null;
+			return (BasicOCSPResp) ocspResponse.getResponseObject();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets an encoded byte array with OCSP validation. The method should not
+	 * throw an exception.
+	 * 
+	 * @param checkCert
+	 *            to certificate to check
+	 * @param rootCert
+	 *            the parent certificate
+	 * @param the
+	 *            url to get the verification. It it's null it will be taken
+	 *            from the check cert or from other implementation specific
+	 *            source
+	 * @return a byte array with the validation or null if the validation could
+	 *         not be obtained
+	 */
+	public static byte[] getEncoded(X509Certificate checkCert, X509Certificate rootCert, String url) {
+		try {
+			BasicOCSPResp basicResponse = getBasicOCSPResp(checkCert, rootCert, url);
+			if (basicResponse != null) {
+				SingleResp[] responses = basicResponse.getResponses();
+				if (responses.length == 1) {
+					SingleResp resp = responses[0];
+					Object status = resp.getCertStatus();
+					if (status == CertificateStatus.GOOD) {
+						System.out.println("ocsp.status.is.GOOD");
+						return basicResponse.getEncoded();
+					} else if (status instanceof RevokedStatus) {
+						throw new IOException(MessageLocalization.getComposedMessage("ocsp.status.is.revoked"));
+					} else {
+						throw new IOException(MessageLocalization.getComposedMessage("ocsp.status.is.unknown"));
+					}
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
 	
 //	public static enum RevocationReason {
 //		// https://en.wikipedia.org/wiki/Revocation_list
