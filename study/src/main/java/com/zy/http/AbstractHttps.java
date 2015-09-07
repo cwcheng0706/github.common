@@ -1,6 +1,8 @@
 package com.zy.http;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyStore;
 
@@ -15,19 +17,14 @@ import javax.net.ssl.TrustManagerFactory;
 
 public abstract class AbstractHttps {
 
-	private String keyStorePath;
-	private String keyStorePassword;
-	private String trustKeyStorePath;
-	private String trustKeySotrePassword;
 	private SSLSocketFactory socketFactory;
 
+	public AbstractHttps(InputStream keyStoreInputStream, String keyStorePassword, InputStream trustKeyStoreInputStream, String trustKeySotrePassword) {
+		socketFactory = initSSLSocketFactory(keyStoreInputStream, keyStorePassword, trustKeyStoreInputStream, trustKeySotrePassword);
+	}
+
 	public AbstractHttps(String keyStorePath, String keyStorePassword, String trustKeyStorePath, String trustKeySotrePassword) {
-		try {
-			init(keyStorePath, keyStorePassword, trustKeyStorePath, trustKeySotrePassword);
-			socketFactory = initSSLSocketFactory();
-		} catch (Exception e) {
-			throw new RuntimeException("初始化SSL异常【" + e + "】");
-		}
+		socketFactory = initSSLSocketFactory(keyStorePath, keyStorePassword, trustKeyStorePath, trustKeySotrePassword);
 	}
 
 	protected HttpsURLConnection getConnection(String urlAddress) throws Exception {
@@ -38,42 +35,71 @@ public abstract class AbstractHttps {
 		return connection;
 	}
 
-	public void init(String keyStorePath, String keyStorePassword, String trustKeyStorePath, String trustKeySotrePassword) {
-		this.keyStorePath = keyStorePath;
-		this.keyStorePassword = keyStorePassword;
-		this.trustKeyStorePath = trustKeyStorePath;
-		this.trustKeySotrePassword = trustKeySotrePassword;
-	}
-
 	private void configurationSSLSOcketFactory(HttpsURLConnection connection) throws Exception {
-
 		connection.setSSLSocketFactory(socketFactory);
 	}
+	
+	private SSLSocketFactory initSSLSocketFactory(String keyStorePath, String keyStorePassword, String trustKeyStorePath, String trustKeySotrePassword) throws RuntimeException {
+		SSLSocketFactory sf = null;
+		InputStream keyStoreInputStream = null;
+		InputStream trustKeyStoreInputStream = null;
+		try{
+			keyStoreInputStream = new FileInputStream(keyStorePath);
+			trustKeyStoreInputStream = new FileInputStream(trustKeyStorePath);
+			sf = initSSLSocketFactory(keyStoreInputStream, keyStorePassword, trustKeyStoreInputStream, trustKeySotrePassword);
+		}catch(Exception e) {
+			throw new RuntimeException("初始化SSLSocketFactory异常【" + e + "】");
+		}finally {
+			if(null != trustKeyStoreInputStream) {
+				try {
+					trustKeyStoreInputStream.close();
+				} catch (IOException e) {
+					trustKeyStoreInputStream = null;
+					throw new RuntimeException("关闭trustKeyStoreInputStream异常【" + e + "】");
+				}
+			}
+			if(null != keyStoreInputStream) {
+				try {
+					keyStoreInputStream.close();
+				} catch (IOException e) {
+					keyStoreInputStream = null;
+					throw new RuntimeException("关闭keyStoreInputStream异常【" + e + "】");
+				}
+			}
+			
+		}
+		return sf;
+	}
 
-	private SSLSocketFactory initSSLSocketFactory() throws Exception {
-
-		// 初始化密钥库
-		KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(C.Certificate.ALGORITHM_SUNX509);
-		KeyStore keyStore = getKeyStore(keyStorePath, C.Certificate.KEY_STORE_TYPE_P12, keyStorePassword);
-
-		// 初始化信任库
-		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(C.Certificate.ALGORITHM_SUNX509);
-		KeyStore trusKeyStore = getKeyStore(trustKeyStorePath, C.Certificate.KEY_STORE_TYPE_JKS, trustKeySotrePassword);
-
-		keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
-		trustManagerFactory.init(trusKeyStore);
-
-		// 初始化SSL上下文
-		SSLContext ctx = SSLContext.getInstance(C.Certificate.PROTOCOL_SSL);
-
-		ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-
-		SSLSocketFactory sf = ctx.getSocketFactory();
-
+	private SSLSocketFactory initSSLSocketFactory(InputStream keyStoreInputStream, String keyStorePassword, InputStream trustKeyStoreInputStream, String trustKeySotrePassword) throws RuntimeException {
+		SSLSocketFactory sf = null;
+		try{
+			// 初始化密钥库
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(C.Certificate.ALGORITHM_SUNX509);
+			KeyStore keyStore = getKeyStore(keyStoreInputStream, C.Certificate.KEY_STORE_TYPE_P12, keyStorePassword);
+	
+			// 初始化信任库
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(C.Certificate.ALGORITHM_SUNX509);
+			KeyStore trusKeyStore = getKeyStore(trustKeyStoreInputStream, C.Certificate.KEY_STORE_TYPE_JKS, trustKeySotrePassword);
+	
+			keyManagerFactory.init(keyStore, keyStorePassword.toCharArray());
+			trustManagerFactory.init(trusKeyStore);
+	
+			// 初始化SSL上下文
+			SSLContext ctx = SSLContext.getInstance(C.Certificate.PROTOCOL_SSL);
+	
+			ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+	
+			sf = ctx.getSocketFactory();
+		}catch(Exception e) {
+			throw new RuntimeException("初始化SSLSocketFactory异常【" + e + "】");
+		}finally {
+		}
 		return sf;
 
 	}
 
+	@SuppressWarnings("unused")
 	private KeyStore getKeyStore(String keyStorePath, String type, String password) throws Exception {
 		FileInputStream is = new FileInputStream(keyStorePath);
 		KeyStore ks = KeyStore.getInstance(type);
@@ -81,6 +107,13 @@ public abstract class AbstractHttps {
 		is.close();
 		return ks;
 	}
+	
+	private KeyStore getKeyStore(InputStream is, String type, String password) throws Exception {
+		KeyStore ks = KeyStore.getInstance(type);
+		ks.load(is, password.toCharArray());
+		is.close();
+		return ks;
+	} 
 
 	protected static class NoopHostnameVerifier implements HostnameVerifier {
 

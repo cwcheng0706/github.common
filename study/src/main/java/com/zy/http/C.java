@@ -24,6 +24,9 @@ public class C {
 
 		public static final String CONTENT_TYPE = "Content-Type";
 		public static final String APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+		
+		public static final String CONTENT_TYPE_JSON = "application/json;charset=UTF-8";
+		public static final String CONTENT_TYPE_PDF = "application/pdf;charset=UTF-8";
 
 	}
 

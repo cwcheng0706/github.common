@@ -1,7 +1,12 @@
 package com.zy.http;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,31 +21,65 @@ public class HttpsInvoker extends AbstractHttps{
 	public HttpsInvoker(String keyStorePath, String keyStorePassword, String trustKeyStorePath, String trustKeySotrePassword) {
 		super(keyStorePath, keyStorePassword, trustKeyStorePath, trustKeySotrePassword);
 	}
+	
+	public HttpsInvoker(InputStream keyStoreInputStream, String keyStorePassword, InputStream trustKeyStoreInputStream, String trustKeySotrePassword) {
+		super(keyStoreInputStream, keyStorePassword, trustKeyStoreInputStream, trustKeySotrePassword);
+	}
 
 	public String get(String url) throws Exception {
+		String ret = "";
 		HttpsURLConnection connection = getConnection(url);
 		InputStream is = null;
 		InputStreamReader isr = null;
 		BufferedReader reader = null;
+		
+		BufferedInputStream bis = null;
+		FileOutputStream os = null;
+		BufferedOutputStream bos = null;
+		
 		String line = null;
 		StringBuilder sb = new StringBuilder();
 		connection.setRequestMethod(C.Http.METHOD_GET);
 		try {
 			int code = connection.getResponseCode();
+			System.out.println("返回码【" + code + "】");
 			if(code != C.Http.CODE_200 ) {
 				is = connection.getErrorStream();
 			}else {
 				is = connection.getInputStream();
 			}
-			isr = new InputStreamReader(is);
-			reader = new BufferedReader(isr);
-			while ((line = reader.readLine()) != null) {
-				sb.append(line);
+			
+			String contentType = connection.getHeaderField("Content-Type");
+			if(C.Http.CONTENT_TYPE_JSON.equals(contentType)) {
+				isr = new InputStreamReader(is,C.Charset.UTF8);
+				reader = new BufferedReader(isr);
+				while ((line = reader.readLine()) != null) {
+					sb.append(line);
+				}
+				ret = sb.toString();
+				System.out.println(ret);
+//				if(-1 != ret.indexOf("content")) {
+//					ret = JsonUtil.getJsonValue(sb.toString(), "content").toString();
+//				}
+			}else if(C.Http.CONTENT_TYPE_PDF.equals(contentType)) {
+				File file = new File("respons.pdf");
+				bis = new BufferedInputStream(is);
+				os = new FileOutputStream(file);
+				bos = new BufferedOutputStream(os);
+				
+				byte[] buffer = new byte[2048];
+				int len = 0;
+				while(-1 != (len = bis.read(buffer))) {
+					bos.write(buffer,0,len);
+				}
+				bos.flush();
+				
+				ret = "返回生成的文件地址【" + file.getAbsolutePath() +"】";
 			}
-//			if(code != C.Http.CODE_200 ) {
-//				BusinessException businessException = (BusinessException) JsonUtil.jsonToBean(sb.toString(), BusinessException.class);
-//				throw businessException;
-//			}
+			if(code != C.Http.CODE_200 ) {
+				BusinessException businessException = (BusinessException) JsonUtil.jsonToBean(ret, BusinessException.class);
+				throw businessException;
+			}
 		} catch (IOException e) {
 			throw new IOException(e);
 		} finally {
@@ -56,14 +95,105 @@ public class HttpsInvoker extends AbstractHttps{
 				is.close();
 				is = null;
 			}
+			
+			
+			if (null != bos) {
+				bos.close();
+				bos = null;
+			}
+			if (null != os) {
+				os.close();
+				os = null;
+			}
+			if (null != bis) {
+				bis.close();
+				bis = null;
+			}
+			
 			// 断开连接
 			connection.disconnect();
 		}
-		return sb.toString();
+		return ret;
+	}
+	
+	public byte[] get4Byte(String url) throws Exception {
+		byte[] ret = null;
+		HttpsURLConnection connection = getConnection(url);
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader reader = null;
+		
+		BufferedInputStream bis = null;
+		FileOutputStream os = null;
+		BufferedOutputStream bos = null;
+		
+		ByteArrayOutputStream baos = null;
+		
+		connection.setRequestMethod(C.Http.METHOD_GET);
+		try {
+			int code = connection.getResponseCode();
+			System.out.println("返回码【" + code + "】");
+			if(code != C.Http.CODE_200 ) {
+				is = connection.getErrorStream();
+			}else {
+				is = connection.getInputStream();
+			}
+			
+			String contentType = connection.getHeaderField("Content-Type");
+			if(C.Http.CONTENT_TYPE_PDF.equals(contentType)) {
+				baos = new ByteArrayOutputStream();
+				bis = new BufferedInputStream(is);
+				
+				byte[] buffer = new byte[2048];
+				int len = 0;
+				while(-1 != (len = bis.read(buffer))) {
+					baos.write(buffer,0,len);
+				}
+				baos.flush();
+				ret = baos.toByteArray();
+			}
+			if(code != C.Http.CODE_200 ) {
+				BusinessException businessException = (BusinessException) JsonUtil.jsonToBean(new String(baos.toByteArray(),C.Charset.UTF8), BusinessException.class);
+				throw businessException;
+			}
+		} catch (IOException e) {
+			throw new IOException(e);
+		} finally {
+			if (null != reader) {
+				reader.close();
+				reader = null;
+			}
+			if (null != isr) {
+				isr.close();
+				isr = null;
+			}
+			if (null != is) {
+				is.close();
+				is = null;
+			}
+			
+			
+			if (null != bos) {
+				bos.close();
+				bos = null;
+			}
+			if (null != os) {
+				os.close();
+				os = null;
+			}
+			if (null != bis) {
+				bis.close();
+				bis = null;
+			}
+			
+			// 断开连接
+			connection.disconnect();
+		}
+		return ret;
 	}
 
 	public String post(String url) throws Exception {
-		
+		String ret = "";
 		StringBuilder sb = new StringBuilder();
 		OutputStream os = null;
 		DataOutputStream out = null;
@@ -101,22 +231,32 @@ public class HttpsInvoker extends AbstractHttps{
 			out.flush();
 
 			int code = connection.getResponseCode();
+			System.out.println("返回码【" + code + "】");
 			if(code != C.Http.CODE_200 ) {
 				in = connection.getErrorStream();
 			}else {
 				in = connection.getInputStream();
 			}
-			isr = new InputStreamReader(in);
-			reader = new BufferedReader(isr);
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line);
+			String contentType = connection.getHeaderField("Content-Type");
+			if(C.Http.CONTENT_TYPE_JSON.equals(contentType)) {
+				isr = new InputStreamReader(in,C.Charset.UTF8);
+				reader = new BufferedReader(isr);
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line);
+				}
+				ret = sb.toString();
+				System.out.println(ret);
+//				if(-1 != ret.indexOf("content")) {
+//					ret = JsonUtil.getJsonValue(sb.toString(), "content").toString();
+//				}
+			}else if(C.Http.CONTENT_TYPE_PDF.equals(contentType)) {
+				
 			}
-//			if(code == C.Http.CODE_400 ) {
-//				BusinessException businessException = (BusinessException) JsonUtil.jsonToBean(sb.toString(), BusinessException.class);
-//				
-//				throw businessException;
-//			}
+			if(code == C.Http.CODE_400 ) {
+				BusinessException businessException = (BusinessException) JsonUtil.jsonToBean(sb.toString(), BusinessException.class);
+				throw businessException;
+			}
 		} catch (IOException e) {
 			throw new BusinessException(e);
 		} finally {
@@ -143,7 +283,7 @@ public class HttpsInvoker extends AbstractHttps{
 
 			connection.disconnect();
 		}
-		return sb.toString();
+		return ret;
 
 	}
 	

@@ -389,6 +389,13 @@
 			<artifactId>itext-pdfa</artifactId>
 			<version>5.5.4</version>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
+		</dependency>
         
 	</dependencies>
 
