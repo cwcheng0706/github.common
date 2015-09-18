@@ -146,7 +146,7 @@ public class PKCSCertificateCoder extends Coder{
 		//client 测试ocsp
 //		byte[] bytes = getEncoded(CertificateCoder.getX509Certificate(new File("d:\\bc\\client.cer")), CertificateCoder.getX509Certificate(new File("d:\\bc\\clientRootCA.crt")), null);
 		
-		byte[] bytes1 = getEncoded(CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baidu.cer")), CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baiduroot.cer")), null);
+		byte[] bytes1 = getEncoded(CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baidu.cer")), CertificateCoder.getX509Certificate(new File("d:\\bc\\checkCert_baiduroot.cer")), "http://172.16.3.11/study/ocsp");
 		
 		
 	}

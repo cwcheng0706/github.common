@@ -91,7 +91,7 @@ public class PKCSOcspServlet extends HttpServlet {
 			
 			X509Certificate certificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\servercer.pem")));
 			X509Certificate issuerCertificate = CertificateCoder.getX509CertificateFromPem(FileUtils.readFileToString(new File("d:\\bc\\serverRootCAcer.pem")));
-			OCSPResp ocspResp = PKCSCertificateCoder.createOcspResp(certificate, true, issuerCertificate, rootcaCertificate, rootcaPrivateKey, Long.valueOf("2"));
+			OCSPResp ocspResp = PKCSCertificateCoder.createOcspResp(certificate, false, issuerCertificate, rootcaCertificate, rootcaPrivateKey, Long.valueOf("2"));
 			
 			
 			writeData(ocspResp.getEncoded(), resp);
