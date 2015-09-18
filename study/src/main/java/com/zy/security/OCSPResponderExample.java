@@ -1,4 +1,4 @@
-package com.zy.security;
+/*package com.zy.security;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -14,9 +14,9 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.ocsp.*;
 
-/**
+*//**
  * Example of OCSP response generation.
- */
+ *//*
 public class OCSPResponderExample {
 	public static OCSPResp generateOCSPResponse(OCSPReq request, PrivateKey responderKey, PublicKey pubKey, CertificateID revokedID) throws NoSuchProviderException, OCSPException {
 		BasicOCSPRespGenerator basicRespGen = new BasicOCSPRespGenerator(pubKey);
@@ -102,4 +102,4 @@ public class OCSPResponderExample {
 
 		System.out.println(getStatusMessage(rootPair, rootCert, BigInteger.valueOf(1), interCert));
 	}
-}
+}*/

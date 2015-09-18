@@ -55,8 +55,8 @@ public class ZipTest {
 	}
 
 	public static void main(String[] temp) {
-		String inputFileName = "D:\\ssl"; // 你要压缩的文件夹
-		String zipFileName = "D:\\test.zip"; // 压缩后的zip文件
+		String inputFileName = "D:\\bc"; // 你要压缩的文件夹
+		String zipFileName = "D:\\bc.rar"; // 压缩后的zip文件
 
 		ZipTest book = new ZipTest();
 		try {
