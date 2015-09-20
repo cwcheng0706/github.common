@@ -44,7 +44,6 @@ import sun.misc.BASE64Encoder;
 import sun.security.pkcs.ContentInfo;
 import sun.security.pkcs.PKCS10;
 import sun.security.pkcs.PKCS7;
-import sun.security.tools.KeyStoreUtil;
 import sun.security.x509.AlgorithmId;
 import sun.security.x509.CertificateAlgorithmId;
 import sun.security.x509.CertificateIssuerName;
@@ -450,7 +449,7 @@ public class ReadKeyStore {
 	public void testGenerateKeyStore() throws Exception {
 		KeyPairGenerator kg = KeyPairGenerator.getInstance("RSA");
 		KeyPair kp = kg.genKeyPair();
-		System.out.println(KeyStoreUtil.niceStoreTypeName("PKCS12"));
+//		System.out.println(KeyStoreUtil.niceStoreTypeName("PKCS12"));
 		System.out.println(kp.getPrivate());
 		System.out.println(kp.getPublic());
 		KeyStore ks = KeyStore.getInstance("JKS");

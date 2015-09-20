@@ -49,7 +49,6 @@ import com.zy.security.Coder;
  * @Company: JL
  * @Create Time: 2014年10月21日 下午2:18:36
  */
-@SuppressWarnings("restriction")
 public abstract class CertificateCoder extends Coder {
 
 	private static Log logger = LogFactory.getLog(CertificateCoder.class);

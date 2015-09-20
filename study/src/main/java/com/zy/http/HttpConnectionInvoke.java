@@ -19,11 +19,13 @@ public class HttpConnectionInvoke {
 		ExecutorService executos = Executors.newFixedThreadPool(100);
 
 		while (true) {
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 1000; i++) {
 				Runnable command = new Runnable() {
 					public void run() {
 						try {
-							HttpConnectionInvoke.readContentFromPost("http://172.16.3.202/download");
+//							HttpConnectionInvoke.readContentFromPost("http://119.63.35.126/");
+//							HttpConnectionInvoke.readContentFromPost("http://kk.mastao.com//feedback_261dd722.aspx?age=");
+							HttpConnectionInvoke.readContentFromPost("http://aa.akls.com.cn/prodetail.php?id=149");
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -31,7 +33,7 @@ public class HttpConnectionInvoke {
 				};
 				executos.execute(command);
 			}
-			Thread.sleep(500);
+			Thread.sleep(55);
 		}
 
 	}

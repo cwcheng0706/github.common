@@ -11,7 +11,9 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -42,89 +44,184 @@ import com.zy.security.jdk.CertificateCoder;
 public class PdfUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(PdfUtils.class);
-	
-	
+
 	public static void main(String[] args) throws Exception {
 		BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
 		Security.addProvider(bouncyCastleProvider);
-		
-		KeyStore ks = CertificateCoder.getKeyStore("C:\\ssl\\openssl\\oneCA\\user.p12", CertificateCoder.KEY_STORE_P12, "user123456");
+
+		String p12Path = "D:\\ssl\\2.199\\openssl\\oneCA\\user.p12";
+		String p12Pass = "user123456";
+		String sealBmpPath = "c:\\seal.bmp";
+
+		String srcFilePath = "C:\\出让人签署.pdf";
+		String destFilePath = String.format("C:\\出让人签署1.pdf");
+		String[] keyWords = new String[]{"客户签章处","见证方签章处","理财师签章处"};
+//		keyWords = new String[] {"见证方签章处"};
+
+		KeyStore ks = CertificateCoder.getKeyStore(p12Path, CertificateCoder.KEY_STORE_P12, p12Pass);
 		Enumeration<String> aliaesEle = ks.aliases();
 		String alia = "";
 		while (aliaesEle.hasMoreElements()) {
 			alia = aliaesEle.nextElement();
 			logger.debug("alia: " + alia);
 		}
-		
-		String srcFilePath = "C:\\出让人签署.pdf";
-		String destFilePath = String.format("C:\\出让人签署_1.pdf");
-		String keyWord = "出让人签章处";
-		byte[] imageBytes = IOUtils.toByteArray(new FileInputStream(new File("c:\\seal.bmp")));
-		Certificate[] chain = CertificateCoder.getCertificateChain("C:\\ssl\\openssl\\oneCA\\user.p12", CertificateCoder.KEY_STORE_P12, alia, "user123456");;
-		PrivateKey pk = CertificateCoder.getPrivateKey("C:\\ssl\\openssl\\oneCA\\user.p12", CertificateCoder.KEY_STORE_P12, alia, "user123456");;
+
+		byte[] imageBytes = IOUtils.toByteArray(new FileInputStream(new File(sealBmpPath)));
+		Certificate[] chain = CertificateCoder.getCertificateChain(p12Path, CertificateCoder.KEY_STORE_P12, alia, p12Pass);
+		PrivateKey pk = CertificateCoder.getPrivateKey(p12Path, CertificateCoder.KEY_STORE_P12, alia, p12Pass);
 		String digestAlgorithm = DigestAlgorithms.SHA256;
 		String provider = bouncyCastleProvider.getName();
-		int len = 100;
-		int width = 100;
+		int len = 50;
+		int width = 50;
 		CryptoStandard subfilter = CryptoStandard.CMS;
 		String reason = "reason";
 		String location = "location";
-//		sign(srcFilePath, destFilePath, keyWord, imageBytes, chain, pk, digestAlgorithm, provider, len, width, subfilter, reason, location);
-		sign1(srcFilePath, destFilePath, chain, pk, digestAlgorithm, provider, len, width, subfilter, reason, location);
 		
+//		sign(srcFilePath, destFilePath, imageBytes, chain, pk, digestAlgorithm, provider, len, width, subfilter, reason, location, keyWords);
+		
+		byte[] signBytes = sign(IOUtils.toByteArray(new FileInputStream(new File(srcFilePath))), imageBytes, chain, pk, digestAlgorithm, provider, len, width, subfilter, reason, location, keyWords);
+		IOUtils.write(signBytes, new FileOutputStream(new File(destFilePath)));
 	}
 
-	public static void sign(String srcFilePath, String destFilePath, String keyWord, byte[] imageBytes, Certificate[] chain, PrivateKey pk, String digestAlgorithm, String provider, int len,
-			int width, CryptoStandard subfilter, String reason, String location) {
+	public static void sign(String srcFilePath, String destFilePath, byte[] imageBytes, Certificate[] chain, PrivateKey pk, String digestAlgorithm, String provider, int len,
+			int width, CryptoStandard subfilter, String reason, String location, String... keyWords) {
 		FileInputStream fis = null;
 		ByteArrayOutputStream bos = null;
-		P[] ps = null;
+		List<P> pList = null;
 		byte[] srcBytes = null;
-		try{
+		try {
 			fis = new FileInputStream(new File(srcFilePath));
 			srcBytes = IOUtils.toByteArray(fis);
 			bos = new ByteArrayOutputStream();
-			ps = searchP(srcBytes, keyWord);
-			
+			pList = searchP(srcBytes, keyWords);
+
 			PdfStamper pdfStamper = null;
-			int index = 1;
-			if (null != ps && 0 < ps.length) {
-//				pdfStamper = getPdfStamper(srcBytes, bos);
-//				PdfSignatureAppearance appearance = getPdfSignatureAppearance(pdfStamper, imageBytes, ps[1], len, width, reason, location);
-//				makeSign(appearance, chain, pk, digestAlgorithm, provider, subfilter);
-				for (int i = 0; i < ps.length; i++) {
-					P p = ps[i];
-//					pdfStamper = getPdfStamper(srcBytes, bos);
+			if (null != pList && 0 < pList.size()) {
+				for (int i = 0; i < pList.size(); i++) {
+					P p = pList.get(i);
 					if (null != p) {
-						if(1 == index) {
-							pdfStamper = getPdfStamper(srcBytes, bos);
-						}else {
-							pdfStamper = getPdfStamper(bos.toByteArray(),bos);
-						}
+						pdfStamper = getPdfStamper(srcBytes, bos);
 						PdfSignatureAppearance appearance = getPdfSignatureAppearance(pdfStamper, imageBytes, p, len, width, reason, location);
 						makeSign(appearance, chain, pk, digestAlgorithm, provider, subfilter);
-						index++;
+						
+//						File temp = new File("c:\\temp_" + index + ".pdf");
+//						IOUtils.write(bos.toByteArray(), new FileOutputStream(temp));
+//						srcBytes = IOUtils.toByteArray(new FileInputStream(temp));
+						srcBytes = bos.toByteArray();
+						if(i < (pList.size() -1)) {
+							bos.reset();
+						}
 					}
 				}
 			}
-			
+
 			IOUtils.write(bos.toByteArray(), new FileOutputStream(new File(destFilePath)));
-//			IOUtils.write(bos.toByteArray(), pdfStamper.getWriter().getOs());
-		}catch(Exception e) {
+		} catch (Exception e) {
 			logger.error("签章异常【" + e + "】");
 			throw new RuntimeException(e);
-		}finally {
-			
+		} finally {
+			if(null != bos) {
+				try {
+					bos.close();
+				} catch (IOException e) {
+					bos = null;
+					logger.error("关闭输出字节流异常【" + e + "】");
+					throw new RuntimeException(e);
+				}
+			}
+			if(null != fis) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					fis = null;
+					logger.error("关闭读源文件流异常【" + e + "】");
+					throw new RuntimeException(e);
+				}
+			}
 		}
 	}
 	
+	public static byte[] sign(byte[] srcFileBytes, byte[] imageBytes, Certificate[] chain, PrivateKey pk, String digestAlgorithm, String provider, int len,
+			int width, CryptoStandard subfilter, String reason, String location, String... keyWords) {
+		ByteArrayOutputStream bos = null;
+		List<P> pList = null;
+		byte[] srcBytes = srcFileBytes;
+		try {
+			bos = new ByteArrayOutputStream();
+			
+			
+			pList = searchP(srcBytes, keyWords);
+
+			PdfStamper pdfStamper = null;
+			if (null != pList && 0 < pList.size()) {
+				for (int i = 0; i < pList.size(); i++) {
+					P p = pList.get(i);
+					if (null != p) {
+						pdfStamper = getPdfStamper(srcBytes, bos);
+						PdfSignatureAppearance appearance = getPdfSignatureAppearance(pdfStamper, imageBytes, p, len, width, reason, location);
+						makeSign(appearance, chain, pk, digestAlgorithm, provider, subfilter);
+						
+//						File temp = new File("c:\\temp_" + index + ".pdf");
+//						IOUtils.write(bos.toByteArray(), new FileOutputStream(temp));
+//						srcBytes = IOUtils.toByteArray(new FileInputStream(temp));
+						srcBytes = bos.toByteArray();
+						if(i < pList.size() -1) {
+							bos.reset();
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			logger.error("签章异常【" + e + "】");
+			throw new RuntimeException(e);
+		} finally {
+			if(null != bos) {
+				try {
+					bos.close();
+				} catch (IOException e) {
+					bos = null;
+					logger.error("关闭输出字节流异常【" + e + "】");
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		return bos.toByteArray();
+	}
+
 	private static PdfStamper getPdfStamper(byte[] srcBytes, OutputStream destOs) {
 		// Creating the reader and the stamper
 		PdfReader reader = null;
 		PdfStamper stamper = null;
 		try {
 			reader = new PdfReader(srcBytes);
-			stamper = PdfStamper.createSignature(reader, destOs, '\0');
+//			PdfReader.unethicalreading = true;
+			stamper = PdfStamper.createSignature(reader, destOs, '\0', null, true);
+//			stamper = PdfStamper.createSignature(reader, destOs, '\0');
+			// 11是阅读、编辑的密码，22是阅读的密码
+			// stamper.setEncryption("11".getBytes(),"22".getBytes(),PdfWriter.ALLOW_SCREENREADERS,PdfWriter.STANDARD_ENCRYPTION_128);
+
+		} catch (Exception e) {
+			logger.error("获取PdfStamper异常【" + e + "】");
+			throw new RuntimeException(e);
+		} finally {
+		}
+		return stamper;
+	}
+	
+	@SuppressWarnings("unused")
+	private static PdfStamper getPdfStamper(PdfReader pdfReader, OutputStream destOs) {
+		// Creating the reader and the stamper
+		PdfReader reader = null;
+		PdfStamper stamper = null;
+		try {
+			reader = new PdfReader(pdfReader);
+			// PdfReader.unethicalreading = true;
+			stamper = PdfStamper.createSignature(reader, destOs, '\0', null, true);
+//			stamper = PdfStamper.createSignature(reader, destOs, '\0');
+			// 11是阅读、编辑的密码，22是阅读的密码
+			// stamper.setEncryption("11".getBytes(),"22".getBytes(),PdfWriter.ALLOW_SCREENREADERS,PdfWriter.STANDARD_ENCRYPTION_128);
+
 		} catch (Exception e) {
 			logger.error("获取PdfStamper异常【" + e + "】");
 			throw new RuntimeException(e);
@@ -148,7 +245,8 @@ public class PdfUtils {
 			pdfSignatureAppearance.setSignatureGraphic(Image.getInstance(image));
 			pdfSignatureAppearance.setRenderingMode(RenderingMode.GRAPHIC);
 
-			pdfSignatureAppearance.setVisibleSignature(new Rectangle(p.getX(), p.getY(), p.getX() + len, p.getY() + width), p.getPageNo(), "FieldName" + p.getPageNo());
+			pdfSignatureAppearance.setVisibleSignature(new Rectangle(p.getX(), p.getY(), p.getX() + len, p.getY() + width), p.getPageNo(), "" + p.getPageNo() + System.nanoTime());
+//			pdfSignatureAppearance.setVisibleSignature(new Rectangle(p.getX(), p.getY(), p.getX() + len, p.getY() + width), 3, "" + p.getPageNo() + System.nanoTime());
 		} catch (Exception e) {
 			logger.error("生成PdfSignatureAppearance异常【" + e + "】");
 			throw new RuntimeException(e);
@@ -199,53 +297,64 @@ public class PdfUtils {
 		MakeSignature.signDetached(appearance, digest, signature, chain, null, null, null, 0, subfilter);
 	}
 
-	private static P[] searchP(byte[] srcBytes, final String keyWord) {
-		P[] ps = null;
+	private static List<P> searchP(byte[] srcBytes, String... keyWords) {
+		List<P> pList = null;
 		try {
 			PdfReader pdfReader = new PdfReader(srcBytes);
 			int pageNum = pdfReader.getNumberOfPages();
 			PdfReaderContentParser pdfReaderContentParser = new PdfReaderContentParser(pdfReader);
 
-			ps = new P[pageNum];
+			pList = new ArrayList<PdfUtils.P>(pageNum);
 			// 下标从1开始
 			int i = 0;
-			for (i = 1; i < pageNum; i++) {
-
-				RenderListenerImpl renderListenerImpl = new RenderListenerImpl(i, keyWord);
+			for (i = 1; i <= pageNum; i++) {
+				RenderListenerImpl renderListenerImpl = new RenderListenerImpl(i, keyWords);
 				pdfReaderContentParser.processContent(i, renderListenerImpl);
-				ps[i - 1] = renderListenerImpl.getP();
+				if (null != renderListenerImpl.getPs() && 0 < renderListenerImpl.getPs().size()) {
+					pList.addAll(renderListenerImpl.getPs());
+				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("搜索关键字异常【" + e + "】");
+			throw new RuntimeException(e);
 		}
-		return ps;
+		return pList;
 	}
 
 	private static class RenderListenerImpl implements RenderListener {
 
 		private int pageNo;
-		private String keyWord;
-		private P p;
+		private String[] keyWordArr;
+		private List<P> pList;
 
-		public RenderListenerImpl(int pageNo, String keyWord) {
+		public RenderListenerImpl(int pageNo, String[] keyWordArr) {
 			this.pageNo = pageNo;
-			this.keyWord = keyWord;
-			p = new P();
+			this.keyWordArr = keyWordArr;
+			pList = new ArrayList<P>();
 		}
 
 		@Override
 		public void renderText(TextRenderInfo textRenderInfo) {
 			String text = textRenderInfo.getText();
-			if (null != text && text.contains(keyWord)) {
-				Float boundingRectange = textRenderInfo.getBaseline().getBoundingRectange();
-				p.setX(boundingRectange.x);
-				p.setY(boundingRectange.y);
-				p.setPageNo(pageNo);
+			if (null != text ){
+				if(null != keyWordArr && 0 < keyWordArr.length) {
+					for(int i = 0 ; i < keyWordArr.length ; i++) {
+						String _keyWord = keyWordArr[i];
+						if(text.contains(_keyWord)) {
+							P p = new P();
+							Float boundingRectange = textRenderInfo.getBaseline().getBoundingRectange();
+							p.setX(boundingRectange.x);
+							p.setY(boundingRectange.y);
+							p.setPageNo(pageNo);
+							pList.add(p);
+						}
+					}
+				}
 			}
 		}
 
-		public P getP() {
-			return p;
+		public List<P> getPs() {
+			return pList;
 		}
 
 		@Override
