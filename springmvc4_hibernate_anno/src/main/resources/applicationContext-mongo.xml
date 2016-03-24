@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+	default-lazy-init="true">
+
+<!-- 	<mongo:mongo id="replicaSetMongo" replica-set="10.16.100.125:3000" /> -->
+<!-- 	<mongo:db-factory id="mongoDbFactory" mongo-ref="replicaSetMongo" -->
+<!-- 		dbname="picdb" username="picuser" password="pic98651" /> -->
+
+<!-- 	<mongo:mongo id="replicaSetMongo" replica-set="172.16.230.183:30000,172.16.230.184:30000" /> -->
+<!-- 	<mongo:db-factory id="mongoDbFactory" mongo-ref="replicaSetMongo" -->
+<!-- 		dbname="test" username="test" password="123456" /> -->
+	
+	<mongo:mongo id="replicaSetMongo" replica-set="10.16.100.125:30000" />
+	<mongo:db-factory id="mongoDbFactory" mongo-ref="replicaSetMongo"
+		dbname="picdb" username="picuser" password="pic98651" />
+
+	<!-- <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate"> 
+		<constructor-arg ref="mongoDbFactory" /> <constructor-arg ref="mongoConverter" 
+		/> <property name="writeConcern" value="SAFE" /> </bean> -->
+
+	<mongo:mapping-converter id="mongoConverter"
+		base-package="com.zy" type-mapper-ref="defaultMongoTypeMapper" />
+
+	<!-- <mongo:repositories base-package="com.snowstore.apollo.repository.mongo" 
+		mongo-template-ref="mongoTemplate" /> -->
+
+	<bean id="defaultMongoTypeMapper"
+		class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+		<constructor-arg name="typeKey">
+			<null /><!-- 这里设置为空,可以把 spring data mongodb 多余保存的_class字段去掉 -->
+		</constructor-arg>
+	</bean>
+
+	<bean class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+		<constructor-arg ref="mongoDbFactory" />
+		<constructor-arg ref="mongoConverter" />
+	</bean>
+
+	<mongo:auditing />
+</beans>

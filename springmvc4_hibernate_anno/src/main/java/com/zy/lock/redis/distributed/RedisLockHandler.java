@@ -69,6 +69,7 @@ public class RedisLockHandler implements IRedisLockHandler {
 				// 将 key 的值设为 value 1成功 0失败
 				Long i = jedis.setnx(key, key);
 				if (i == 1) {
+//					Integer.parseInt("sss");
 					// 设置过期时间
 					jedis.expire(key, DEFAULT_SINGLE_EXPIRE_TIME);
 					LOGGER.debug("get lock, key: " + key + " , expire in " + DEFAULT_SINGLE_EXPIRE_TIME + " seconds.");
@@ -108,9 +109,9 @@ public class RedisLockHandler implements IRedisLockHandler {
 		try {
 			jedis = getResource();
 			do {
-				LOGGER.debug("lock key: " + key);
 				Long i = jedis.setnx(key, key);
 				if (i == 1) {
+					LOGGER.debug("lock key: " + key);
 					jedis.expire(key, DEFAULT_SINGLE_EXPIRE_TIME);
 					LOGGER.debug("get lock, key: " + key + " , expire in " + DEFAULT_SINGLE_EXPIRE_TIME + " seconds.");
 					return;
@@ -262,7 +263,8 @@ public class RedisLockHandler implements IRedisLockHandler {
 		}
 		try {
 			// 中断链接
-			jedisPool.returnBrokenResource(jedis);
+			jedis.close();
+//			jedisPool.returnBrokenResource(jedis);
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}
@@ -278,7 +280,8 @@ public class RedisLockHandler implements IRedisLockHandler {
 			return;
 		}
 		try {
-			jedisPool.returnResource(jedis);
+			jedis.close();
+//			jedisPool.returnResource(jedis);
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}

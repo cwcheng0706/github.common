@@ -71,6 +71,7 @@
 
 	<dependencies>
 	
+		<!-- redis -->
 		<dependency>
 		    <groupId>org.springframework.data</groupId>
 		    <artifactId>spring-data-redis</artifactId>
@@ -81,6 +82,13 @@
 		    <artifactId>jedis</artifactId>
 		    <version>2.8.0</version>
 		</dependency>
+		
+		<!-- 配置 Spring data mongoDB -->
+    	<dependency>
+	        <groupId>org.springframework.data</groupId>
+	        <artifactId>spring-data-mongodb</artifactId>
+	        <version>1.6.1.RELEASE</version>
+	    </dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -416,13 +424,14 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.4</version>
-				<!-- <configuration> -->
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
 				<!-- <webResources> -->
 				<!-- <resource> -->
 				<!-- <directory>WebContent</directory> -->
 				<!-- </resource> -->
 				<!-- </webResources> -->
-				<!-- </configuration> -->
+				</configuration>
 			</plugin>
 
 			<plugin>
