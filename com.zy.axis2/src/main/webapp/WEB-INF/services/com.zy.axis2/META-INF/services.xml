@@ -1,0 +1,28 @@
+<serviceGroup>
+	<service name="StockQuoteService">
+		<description>
+			Stock Quote Service
+		</description>
+		<operation name="getPrice">
+			<messageReceiver class="org.apache.axis2.receivers.RawXMLINOutMessageReceiver" />
+		</operation>
+		<operation name="update">
+			<messageReceiver class="org.apache.axis2.receivers.RawXMLINOnlyMessageReceiver" />
+		</operation>
+		<parameter name="ServiceClass">samples.quickstart.service.axiom.StockQuoteService
+		</parameter>
+	</service>
+	<service name="JsonService">
+		<Description>
+			This is a sample service to test json implementation
+		</Description>
+		<messageReceivers>
+			<messageReceiver mep="http://www.w3.org/ns/wsdl/in-out"
+				class="org.apache.axis2.json.gson.rpc.JsonRpcMessageReceiver" />
+			<messageReceiver mep="http://www.w3.org/ns/wsdl/in-only"
+				class="org.apache.axis2.json.gson.rpc.JsonInOnlyRPCMessageReceiver" />
+		</messageReceivers>
+		<parameter name="ServiceClass" locked="false">sample.json.service.JsonService
+		</parameter>
+	</service>
+</serviceGroup>
