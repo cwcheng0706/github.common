@@ -8,6 +8,10 @@ import java.util.Set;
 
 public class TestHashMap {
 	public static void main(String[] args) {
+		// 测试HashMap中计算index的位置的算法， 与运算 与 取模
+		for(int i = 1 ;i < 100; i++) {
+			System.out.println((i & 7) + " == " + (i%8));
+		}
 		
 		
 		//下面是hashcode相同，equals不同,  key 不会被覆盖，会追加新的Entry
