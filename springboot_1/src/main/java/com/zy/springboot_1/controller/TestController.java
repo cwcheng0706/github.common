@@ -31,6 +31,7 @@ public class TestController {
 	@Autowired
 	private TestService testService;
 	
+	
 	@RequestMapping("/test")
 	public User rest() {
 		
@@ -69,25 +70,25 @@ public class TestController {
 		return userList;
 	}
 	
-	@RequestMapping("/err")
-	public String error(){
-		throw new RuntimeException("测试异常");
-	}
-	
-	@ExceptionHandler(Exception.class)
-	public String exceptionHandler(){
-		return "error";
-	}
-	
-	@RequestMapping("/err1")
-	public String error1(){
-		return "error";
-	}
-	
-	@RequestMapping("/")
-	public String index(){
-		return "/index";
-	}
+//	@RequestMapping("/err")
+//	public String error(){
+//		throw new RuntimeException("测试异常");
+//	}
+//	
+//	@ExceptionHandler(Exception.class)
+//	public String exceptionHandler(){
+//		return "error";
+//	}
+//	
+//	@RequestMapping("/err1")
+//	public String error1(){
+//		return "error";
+//	}
+//	
+//	@RequestMapping("/")
+//	public String index(){
+//		return "/index";
+//	}
 	
 	@RequestMapping("/userList")
 	public List<User> userList(){

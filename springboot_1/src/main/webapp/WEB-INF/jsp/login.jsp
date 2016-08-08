@@ -6,10 +6,8 @@
 <title>用户登录</title>
 </head>
 <body>
-	用户登录：
-	<br />
-
-	<form action="/login" method="post">
+	<c:url value="/login" var="loginUrl" />
+	<form action="${loginUrl}" method="post">
 
 		<c:if test="${param.error != null}">
 			<p>Invalid username and password.</p>
@@ -26,6 +24,5 @@
 		<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 		<button type="submit" class="btn">Log in</button>
 	</form>
-
 </body>
 </html>

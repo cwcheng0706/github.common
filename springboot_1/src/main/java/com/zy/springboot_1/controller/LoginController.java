@@ -5,9 +5,10 @@
  */
 package com.zy.springboot_1.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * @Project: springboot_1
@@ -17,23 +18,36 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @Controller
 public class LoginController {
+	private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
-	@RequestMapping("/loginIndex")
-	public String loginIndex(){
-		
+	@RequestMapping("/login")
+	public String login() {
+		logger.info("-------login-----");
 		return "/login";
 	}
 	
-	@RequestMapping("/loginIndex1")
-	public ModelAndView loginIndex1(){
-		return new ModelAndView("/login");
+	@RequestMapping("/index")
+	public String index(){
+		logger.info("-------index-----");
+		return "/index";
 	}
 	
-	@RequestMapping("/login")
-	public String login() {
-		
-		
-		return "/index";
+//	@RequestMapping("/error")
+//	public String error(){
+//		logger.info("-------error-----");
+//		return "error";
+//	}
+	
+	@RequestMapping("/logoutSuccess")
+	public String logoutSuccess(){
+		logger.info("-------logoutSuccess-----");
+		return "/logoutSuccess";
+	}
+	
+	@RequestMapping("/user")
+	public String user(){
+		logger.info("-------user-----");
+		return "/user";
 	}
 	
 }

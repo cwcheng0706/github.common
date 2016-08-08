@@ -1,4 +1,4 @@
-package com.zy.thread;
+package com.zy.concurrent;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -92,7 +92,7 @@ class RunnableWorker<T> implements Runnable {
 //		System.out.println(name + "【" + Thread.currentThread().getName() + "】 work start..");
 
 		try {
-			Thread.sleep(100000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
