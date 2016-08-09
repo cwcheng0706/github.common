@@ -40,8 +40,8 @@ public class TestController {
 		System.out.println(cfg.getPassword());
 		
 		User u = new User();
-		u.setAccount("account");
-		u.setPasswork("123456");
+		u.setUsername("account");
+		u.setPassword("123456");
 		return u;
 	}
 	
@@ -50,8 +50,8 @@ public class TestController {
 		List<User> userList = new ArrayList<User>();
 		for(int i = 0 ; i < 5; i++ ) {
 			User u = new User();
-			u.setAccount("account" + i);
-			u.setPasswork("password" + i);
+			u.setUsername("account" + i);
+			u.setPassword("password" + i);
 			userList.add(u);
 		}
 		
@@ -95,8 +95,8 @@ public class TestController {
 		List<User> userList = new ArrayList<User>();
 		for(int i = 0 ; i < 5; i++ ) {
 			User u = new User();
-			u.setAccount("account" + i);
-			u.setPasswork("password" + i);
+			u.setUsername("account" + i);
+			u.setPassword("password" + i);
 			userList.add(u);
 		}
 		

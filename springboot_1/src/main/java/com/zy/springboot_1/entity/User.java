@@ -19,23 +19,24 @@ public class User implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -3277234226153623691L;
-	
-	private String account;
-	private String passwork;
 
-	public String getAccount() {
-		return account;
+	private String username;
+	private String password;
+
+	public String getUsername() {
+		return username;
 	}
 
-	public void setAccount(String account) {
-		this.account = account;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
-	public String getPasswork() {
-		return passwork;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setPasswork(String passwork) {
-		this.passwork = passwork;
+	public void setPassword(String password) {
+		this.password = password;
 	}
+
 }

@@ -25,6 +25,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
+import com.zy.springboot_1.config.spring.CustomerAuthenticationProvider;
+
 /**
  * @Project: springboot_1
  * @Author zy
@@ -34,14 +36,21 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 @Configuration
 public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 
-	private static final Logger logger = LoggerFactory.getLogger(SpringSecConfig.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SpringSecConfig.class);
+	
+	@Autowired
+	private CustomerAuthenticationProvider authenticationProvider;
 			
 	protected void configure(HttpSecurity http) throws Exception {
 		
 		AuthenticationSuccessHandler successHandler = new AuthenticationSuccessHandler() {
 			public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse resp, Authentication auth)
 					throws IOException, ServletException {
-				logger.info("--------AuthenticationSuccessHandler-------");
+				LOGGER.info("--------AuthenticationSuccessHandler-------");
+				String name = auth.getName();
+				Object principal = auth.getPrincipal();
+				Object obj = auth.getDetails();
+				Object credentials = auth.getCredentials();
 				
 				req.getRequestDispatcher("/index").forward(req, resp);
 			}
@@ -50,14 +59,14 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 		LogoutSuccessHandler logoutSuccessHandler = new LogoutSuccessHandler() {
 			public void onLogoutSuccess(HttpServletRequest req, HttpServletResponse resp, Authentication auth)
 					throws IOException, ServletException {
-				logger.info("--------LogoutSuccessHandler-------");
+				LOGGER.info("--------LogoutSuccessHandler-------");
 				
 			}
 		};
 		
 		LogoutHandler logoutHandler = new LogoutHandler() {
 			public void logout(HttpServletRequest req, HttpServletResponse resp, Authentication auth) {
-				logger.info("--------LogoutHandler-------");
+				LOGGER.info("--------LogoutHandler-------");
 				
 			}
 		};
@@ -81,15 +90,15 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 		
 		
 		//登出
-		http.logout()                                                                
-			.logoutUrl("/logout")                                                 
-			.logoutSuccessUrl("/logoutSuccess")                                           
-			.logoutSuccessHandler(logoutSuccessHandler)              
-			.invalidateHttpSession(true)//清空session                                          
-			.addLogoutHandler(logoutHandler)                    
-//			.deleteCookies(cookieNamesToClear)                    
-			.and()
-			;
+//		http.logout()                                                                
+//			.logoutUrl("/logout")                                                 
+//			.logoutSuccessUrl("/logoutSuccess")                                           
+//			.logoutSuccessHandler(logoutSuccessHandler)              
+//			.invalidateHttpSession(true)//清空session                                          
+//			.addLogoutHandler(logoutHandler)                    
+////			.deleteCookies(cookieNamesToClear)                    
+//			.and()
+//			;
 	}
 	
 //	@Bean
@@ -99,9 +108,12 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+		LOGGER.info("--------configureGlobal-------");
 	        auth
 	            .inMemoryAuthentication()
-	                .withUser("admin").password("admin").roles("USER");
+	                .withUser("admin123").password("admin123456").roles("USER");
+	        
+	        auth.authenticationProvider(authenticationProvider);
 	}
 	
 	
