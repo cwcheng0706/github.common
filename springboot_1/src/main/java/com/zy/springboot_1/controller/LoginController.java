@@ -26,6 +26,12 @@ public class LoginController {
 		return "/login";
 	}
 	
+	@RequestMapping("/home")
+	public String home() {
+		logger.info("-------home-----");
+		return "/home";
+	}
+	
 	@RequestMapping("/index")
 	public String index(){
 		logger.info("-------index-----");

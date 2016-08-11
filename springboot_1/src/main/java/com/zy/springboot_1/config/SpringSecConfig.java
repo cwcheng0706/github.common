@@ -51,7 +51,6 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 				Object principal = auth.getPrincipal();
 				Object obj = auth.getDetails();
 				Object credentials = auth.getCredentials();
-				
 				req.getRequestDispatcher("/index").forward(req, resp);
 			}
 		};
@@ -71,19 +70,22 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 			}
 		};
 		
+		http.authorizeRequests().antMatchers("/css/**").permitAll().anyRequest()
+		.fullyAuthenticated().and().formLogin().loginPage("/login")
+		.failureUrl("/login?error").permitAll().and().logout().permitAll();
 		
-		http.authorizeRequests()
-			.antMatchers("/").permitAll()
-			.antMatchers("/user").permitAll()
-		 	.antMatchers("/login*").permitAll()
-		 	.antMatchers("/test*","/err*").permitAll()
-		 	.anyRequest().authenticated() //表示除了上面配置的  其它都需要安全验证，一般这行放置最后
-		 	;
+//		http.authorizeRequests()
+//			.antMatchers("/").permitAll()
+//			.antMatchers("/user").permitAll()
+//		 	.antMatchers("/login*").permitAll()
+//		 	.antMatchers("/test*","/err*").permitAll()
+//		 	.anyRequest().authenticated() //表示除了上面配置的  其它都需要安全验证，一般这行放置最后
+//		 	;
 		
 		//登录
-		http
-		 	.formLogin().loginPage("/login").permitAll()
-		 	.successHandler(successHandler)
+//		http
+//		 	.formLogin().loginPage("/login").permitAll()
+//		 	.successHandler(successHandler)
 //		 	.successForwardUrl("/index")
 //		 	.failureForwardUrl("/error")
 		;
@@ -106,15 +108,19 @@ public class SpringSecConfig extends WebSecurityConfigurerAdapter {
 //       return new LoginSuccessHandler();//code6
 //    }
 	
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		LOGGER.info("--------configureGlobal-------");
-	        auth
-	            .inMemoryAuthentication()
-	                .withUser("admin123").password("admin123456").roles("USER");
-	        
-	        auth.authenticationProvider(authenticationProvider);
+	@Override
+	public void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.inMemoryAuthentication().withUser("admin").password("admin").roles("USER");
 	}
+	
+//	@Autowired
+//	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+//		LOGGER.info("--------configureGlobal-------");
+//	        auth
+//	            .inMemoryAuthentication()
+//	                .withUser("admin").password("123456").roles("USER");
+//	        auth.authenticationProvider(authenticationProvider);
+//	}
 	
 	
 	
