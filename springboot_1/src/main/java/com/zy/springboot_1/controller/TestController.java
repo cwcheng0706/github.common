@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zy.springboot_1.service.TestService;
-import com.zy.springboot_1.config.SpringbootConfig;
 import com.zy.springboot_1.entity.User;;
 
 /**
@@ -27,17 +26,12 @@ import com.zy.springboot_1.entity.User;;
 public class TestController {
 	
 	@Autowired
-	private SpringbootConfig cfg;
-	@Autowired
 	private TestService testService;
 	
 	
 	@RequestMapping("/test")
 	public User rest() {
 		
-		System.out.println(cfg.getName());
-		System.out.println(testService.getUserName());
-		System.out.println(cfg.getPassword());
 		
 		User u = new User();
 		u.setUsername("account");
