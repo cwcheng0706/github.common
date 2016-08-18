@@ -1,0 +1,10 @@
+/target
+/bin
+/.classpath
+/.project
+/.settings
+/logs
+/.tomcatplugin
+/work/
+/tomcat*
+/catalina.base*
