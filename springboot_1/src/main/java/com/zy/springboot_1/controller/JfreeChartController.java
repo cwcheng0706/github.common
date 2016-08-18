@@ -7,6 +7,8 @@ package com.zy.springboot_1.controller;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -108,6 +111,18 @@ public class JfreeChartController {
 
 		// 解决乱码问题
 		getChartByFont(chart);
+		
+		
+		// 6. 将图形转换为图片，传到前台
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		FileOutputStream fos_jpg = null;
+		try {
+			fos_jpg=new FileOutputStream("f:\\项目状态分布.jpg");
+			ChartUtilities.writeChartAsJPEG(bos,100,chart,640,480);
+			
+			//fos_jpg.close();
+		} catch (Exception e) {
+		}
 
 		// 6. 将图形转换为图片，传到前台
 		String fileName = ServletUtilities.saveChartAsJPEG(chart, 700, 400, null, request.getSession());
