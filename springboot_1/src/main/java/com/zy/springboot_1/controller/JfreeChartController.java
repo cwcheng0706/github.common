@@ -18,6 +18,7 @@ import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -38,6 +39,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.TextAnchor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -115,19 +117,16 @@ public class JfreeChartController {
 		
 		// 6. 将图形转换为图片，传到前台
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		FileOutputStream fos_jpg = null;
-		try {
-			fos_jpg=new FileOutputStream("f:\\项目状态分布.jpg");
-			ChartUtilities.writeChartAsJPEG(bos,100,chart,640,480);
-			
-			//fos_jpg.close();
-		} catch (Exception e) {
-		}
-
-		// 6. 将图形转换为图片，传到前台
+		ChartUtilities.writeChartAsJPEG(bos, chart, 640,480);
+		String imgBase64 = Base64Utils.encodeToString(bos.toByteArray());
+		
+		
+		// 7. 将图形转换为图片，传到前台
 		String fileName = ServletUtilities.saveChartAsJPEG(chart, 700, 400, null, request.getSession());
 		String chartURL = request.getContextPath() + "/chart?filename=" + fileName;
 		model.addAttribute("chartURL", chartURL);
+		
+		model.addAttribute("imgBase64", imgBase64);
 		return "/jfreechart/columnChart";
 	}
 

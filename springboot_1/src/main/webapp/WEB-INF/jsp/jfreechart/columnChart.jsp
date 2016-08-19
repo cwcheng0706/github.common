@@ -16,6 +16,9 @@
 		jfreechart _3D柱状图 <br/>
 		点击显示柱状图<a href="getColumnChart">getMajorChart</a><br/>
 		<img src="${chartURL}" width=600 height=400 border=0 color=gray />
+		
+		<img width="600" height="400" src="data:image/jpg;base64,${imgBase64 }" />
+	
 	</div>
 </body>
 </html>
