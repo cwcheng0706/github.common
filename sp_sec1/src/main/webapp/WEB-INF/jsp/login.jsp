@@ -13,10 +13,10 @@
 	<c:url value="/login" var="loginUrl" />
 	<form action="${loginUrl}" method="post">
 		<c:if test="${param.error != null}">
-			<p>Invalid username and password.</p>
+			<p>Invalid username and password.[${param.error}]</p>
 		</c:if>
 		<c:if test="${param.logout != null}">
-			<p>You have been logged out.</p>
+			<p>You have been logged out.[${param.logout}]</p>
 		</c:if>
 		<p>
 			<label for="username">Username</label> <input type="text" id="username" name="username" />

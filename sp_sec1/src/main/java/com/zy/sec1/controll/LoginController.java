@@ -9,13 +9,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -29,12 +30,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class LoginController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
 
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	
+	@RequestMapping("/")
+	public String index1() {
+		LOGGER.info("-------//-----");
+		LOGGER.info(bCryptPasswordEncoder.encode("admin"));
+		return "/index";
+	}
+	
 	@SuppressWarnings("unchecked")
 	@RequestMapping("")
 	public String index(HttpServletRequest req) {
-		LOGGER.info("-------index-----");
-		HttpSession session = req.getSession();
-		session.setAttribute("user", "user");
+		LOGGER.info("-------\"\"-----");
+//		HttpSession session = req.getSession();
+//		session.setAttribute("user", "user");
+//		String password = req.getParameter("password");
+//		LOGGER.info("pwd:" + password);
 		
 		// 登陆用户的权限对象
 	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
